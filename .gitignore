@@ -1,5 +1,7 @@
-# Environment / secrets
+# Secrets
 .env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
@@ -7,10 +9,15 @@ __pycache__/
 .venv/
 venv/
 
-# Database
-data/*.db
-data/*.sqlite
-data/*.sqlite3
+# Database / runtime data
+data/*
+!data/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
 
 # IDE
 .vscode/
@@ -18,6 +25,4 @@ data/*.sqlite3
 
 # OS
 .DS_Store
-
-# Logs
-*.log
+Thumbs.db
