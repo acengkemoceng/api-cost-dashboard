@@ -25,12 +25,81 @@ function moneyTooltip(context) {
 }
 
 
+function activateTab(name) {
+    const buttons = document.querySelectorAll(
+        "[data-tab-target]"
+    );
+
+    const panels = document.querySelectorAll(
+        "[data-tab-panel]"
+    );
+
+    buttons.forEach((button) => {
+        button.classList.toggle(
+            "active",
+            button.dataset.tabTarget === name
+        );
+    });
+
+    panels.forEach((panel) => {
+        panel.classList.toggle(
+            "active",
+            panel.dataset.tabPanel === name
+        );
+    });
+}
+
+
+function setupTabs() {
+    const buttons = document.querySelectorAll(
+        "[data-tab-target]"
+    );
+
+    buttons.forEach((button) => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const target =
+                    button.dataset.tabTarget;
+
+                window.location.hash =
+                    target;
+
+                activateTab(
+                    target
+                );
+            }
+        );
+
+    });
+
+    const hash =
+        window.location.hash
+            .replace("#", "");
+
+    const allowed = [
+        "overview",
+        "openrouter",
+        "deepseek",
+        "integrations",
+    ];
+
+    activateTab(
+        allowed.includes(hash)
+            ? hash
+            : "overview"
+    );
+}
+
+
 async function loadOpenRouterChart() {
     const canvas = document.getElementById(
         "openrouterChart"
     );
 
-    const emptyMessage = document.getElementById(
+    const empty = document.getElementById(
         "openrouterChartEmpty"
     );
 
@@ -40,32 +109,21 @@ async function loadOpenRouterChart() {
 
     try {
         const response = await fetch(
-            "/api/history/openrouter?limit=30"
+            "/api/history/openrouter?limit=50"
         );
 
-        if (!response.ok) {
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-        }
-
-        const payload = await response.json();
+        const payload =
+            await response.json();
 
         const history = payload.data
             .slice()
             .reverse();
 
-        if (history.length === 0) {
+        if (!history.length) {
             canvas.style.display = "none";
-            emptyMessage.style.display = "block";
+            empty.style.display = "block";
             return;
         }
-
-        const labels = history.map(
-            (item) => formatDate(
-                item.created_at
-            )
-        );
 
         new Chart(
             canvas,
@@ -73,11 +131,17 @@ async function loadOpenRouterChart() {
                 type: "line",
 
                 data: {
-                    labels: labels,
+                    labels: history.map(
+                        (item) =>
+                            formatDate(
+                                item.created_at
+                            )
+                    ),
 
                     datasets: [
                         {
-                            label: "Monthly Usage ($)",
+                            label:
+                                "Monthly Usage ($)",
 
                             data: history.map(
                                 (item) =>
@@ -86,11 +150,11 @@ async function loadOpenRouterChart() {
 
                             tension: 0.3,
                             borderWidth: 2,
-                            pointRadius: 4,
                         },
 
                         {
-                            label: "Total Key Usage ($)",
+                            label:
+                                "Total Key Usage ($)",
 
                             data: history.map(
                                 (item) =>
@@ -99,7 +163,6 @@ async function loadOpenRouterChart() {
 
                             tension: 0.3,
                             borderWidth: 2,
-                            pointRadius: 4,
                         },
                     ],
                 },
@@ -122,7 +185,8 @@ async function loadOpenRouterChart() {
 
                         tooltip: {
                             callbacks: {
-                                label: moneyTooltip,
+                                label:
+                                    moneyTooltip,
                             },
                         },
                     },
@@ -144,10 +208,6 @@ async function loadOpenRouterChart() {
 
                             ticks: {
                                 color: "#727b8a",
-
-                                callback: function (value) {
-                                    return "$" + value;
-                                },
                             },
 
                             grid: {
@@ -161,16 +221,11 @@ async function loadOpenRouterChart() {
 
     } catch (error) {
         console.error(
-            "Failed to load OpenRouter history:",
             error
         );
 
         canvas.style.display = "none";
-
-        emptyMessage.textContent =
-            "Unable to load OpenRouter history.";
-
-        emptyMessage.style.display = "block";
+        empty.style.display = "block";
     }
 }
 
@@ -180,7 +235,7 @@ async function loadDeepSeekChart() {
         "deepseekChart"
     );
 
-    const emptyMessage = document.getElementById(
+    const empty = document.getElementById(
         "deepseekChartEmpty"
     );
 
@@ -190,32 +245,21 @@ async function loadDeepSeekChart() {
 
     try {
         const response = await fetch(
-            "/api/history/deepseek?limit=30"
+            "/api/history/deepseek?limit=50"
         );
 
-        if (!response.ok) {
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-        }
-
-        const payload = await response.json();
+        const payload =
+            await response.json();
 
         const history = payload.data
             .slice()
             .reverse();
 
-        if (history.length === 0) {
+        if (!history.length) {
             canvas.style.display = "none";
-            emptyMessage.style.display = "block";
+            empty.style.display = "block";
             return;
         }
-
-        const labels = history.map(
-            (item) => formatDate(
-                item.created_at
-            )
-        );
 
         new Chart(
             canvas,
@@ -223,11 +267,17 @@ async function loadDeepSeekChart() {
                 type: "line",
 
                 data: {
-                    labels: labels,
+                    labels: history.map(
+                        (item) =>
+                            formatDate(
+                                item.created_at
+                            )
+                    ),
 
                     datasets: [
                         {
-                            label: "Available Balance ($)",
+                            label:
+                                "Available Balance ($)",
 
                             data: history.map(
                                 (item) =>
@@ -236,11 +286,11 @@ async function loadDeepSeekChart() {
 
                             tension: 0.3,
                             borderWidth: 2,
-                            pointRadius: 4,
                         },
 
                         {
-                            label: "Top-up Balance ($)",
+                            label:
+                                "Top-up Balance ($)",
 
                             data: history.map(
                                 (item) =>
@@ -249,20 +299,6 @@ async function loadDeepSeekChart() {
 
                             tension: 0.3,
                             borderWidth: 2,
-                            pointRadius: 4,
-                        },
-
-                        {
-                            label: "Granted Credit ($)",
-
-                            data: history.map(
-                                (item) =>
-                                    item.granted_balance
-                            ),
-
-                            tension: 0.3,
-                            borderWidth: 2,
-                            pointRadius: 4,
                         },
                     ],
                 },
@@ -285,7 +321,8 @@ async function loadDeepSeekChart() {
 
                         tooltip: {
                             callbacks: {
-                                label: moneyTooltip,
+                                label:
+                                    moneyTooltip,
                             },
                         },
                     },
@@ -307,10 +344,6 @@ async function loadDeepSeekChart() {
 
                             ticks: {
                                 color: "#727b8a",
-
-                                callback: function (value) {
-                                    return "$" + value;
-                                },
                             },
 
                             grid: {
@@ -324,24 +357,23 @@ async function loadDeepSeekChart() {
 
     } catch (error) {
         console.error(
-            "Failed to load DeepSeek history:",
             error
         );
 
         canvas.style.display = "none";
-
-        emptyMessage.textContent =
-            "Unable to load DeepSeek history.";
-
-        emptyMessage.style.display = "block";
+        empty.style.display = "block";
     }
 }
 
 
 document.addEventListener(
     "DOMContentLoaded",
-    function () {
+    () => {
+
+        setupTabs();
+
         loadOpenRouterChart();
         loadDeepSeekChart();
+
     }
 );

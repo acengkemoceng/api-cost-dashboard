@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -15,18 +16,20 @@
         rel="stylesheet"
         href="{{ url_for('static', path='/style.css') }}"
     >
+
 </head>
+
 
 <body>
 
-<main class="container">
+<div class="app-shell">
 
-    <header class="header">
+    <header class="topbar">
 
         <div>
 
             <p class="eyebrow">
-                AI API MONITORING
+                SELF-HOSTED AI MONITORING
             </p>
 
             <h1>
@@ -34,24 +37,24 @@
             </h1>
 
             <p class="subtitle">
-                Monitor AI provider usage,
-                balance, and spending from
-                one local dashboard.
+                Monitor balances, spending,
+                usage and AI provider integrations
+                from one dashboard.
             </p>
 
         </div>
 
 
-        <div class="header-actions">
+        <div class="topbar-actions">
 
             <a
-                class="refresh-button"
                 href="/"
+                class="refresh-button"
             >
                 Refresh
             </a>
 
-            <span class="status">
+            <span class="online-badge">
                 ● Online
             </span>
 
@@ -60,642 +63,938 @@
     </header>
 
 
-    <section class="cards">
+    <!-- NAVIGATION -->
 
-        <article class="card">
+    <nav class="dashboard-nav">
 
-            <p>
-                Connected Providers
-            </p>
+        <button
+            class="nav-button active"
+            data-tab-target="overview"
+        >
+            Overview
+        </button>
 
-            <h2>
-                {{ connected_providers }}
-            </h2>
+        <button
+            class="nav-button"
+            data-tab-target="openrouter"
+        >
+            OpenRouter
+        </button>
 
-            <span>
-                of 3 configured providers
-            </span>
+        <button
+            class="nav-button"
+            data-tab-target="deepseek"
+        >
+            DeepSeek
+        </button>
 
-        </article>
+        <button
+            class="nav-button"
+            data-tab-target="integrations"
+        >
+            Integrations
+        </button>
 
-
-        <article class="card">
-
-            <p>
-                DeepSeek Balance
-            </p>
-
-            <h2>
-                ${{ "%.2f"|format(
-                    deepseek.total_balance
-                ) }}
-            </h2>
-
-            <span>
-                Available USD credit
-            </span>
-
-        </article>
+    </nav>
 
 
-        <article class="card">
+    <!-- OVERVIEW -->
 
-            <p>
-                OpenRouter Credit
-            </p>
+    <section
+        class="tab-panel active"
+        data-tab-panel="overview"
+    >
 
-            <h2>
-                ${{ "%.4f"|format(
-                    credits.remaining
-                ) }}
-            </h2>
-
-            <span>
-                Remaining account credit
-            </span>
-
-        </article>
-
-
-        <article class="card">
-
-            <p>
-                OpenRouter Spent
-            </p>
-
-            <h2>
-                ${{ "%.4f"|format(
-                    credits.total_usage
-                ) }}
-            </h2>
-
-            <span>
-                Total account usage
-            </span>
-
-        </article>
-
-
-        <article class="card">
-
-            <p>Today</p>
-
-            <h2>
-                ${{ "%.4f"|format(
-                    openrouter.usage_daily
-                ) }}
-            </h2>
-
-            <span>
-                OpenRouter daily usage
-            </span>
-
-        </article>
-
-
-        <article class="card">
-
-            <p>This Week</p>
-
-            <h2>
-                ${{ "%.4f"|format(
-                    openrouter.usage_weekly
-                ) }}
-            </h2>
-
-            <span>
-                OpenRouter weekly usage
-            </span>
-
-        </article>
-
-
-        <article class="card">
-
-            <p>This Month</p>
-
-            <h2>
-                ${{ "%.4f"|format(
-                    openrouter.usage_monthly
-                ) }}
-            </h2>
-
-            <span>
-                OpenRouter monthly usage
-            </span>
-
-        </article>
-
-    </section>
-
-
-    <!-- OPENROUTER BALANCE -->
-    <section class="panel credit-panel">
-
-        <div class="panel-header">
+        <div class="section-heading">
 
             <div>
 
                 <p class="eyebrow">
-                    OPENROUTER
+                    OVERVIEW
                 </p>
 
                 <h2>
-                    Account Balance
+                    Unified API Overview
                 </h2>
 
             </div>
 
-        </div>
-
-
-        {% if credits.connected %}
-
-        <div class="credit-summary">
-
-            <div>
-
-                <span>
-                    Total Credits
-                </span>
-
-                <strong>
-                    ${{ "%.4f"|format(
-                        credits.total_credits
-                    ) }}
-                </strong>
-
-            </div>
-
-
-            <div>
-
-                <span>Used</span>
-
-                <strong>
-                    ${{ "%.4f"|format(
-                        credits.total_usage
-                    ) }}
-                </strong>
-
-            </div>
-
-
-            <div>
-
-                <span>
-                    Remaining
-                </span>
-
-                <strong>
-                    ${{ "%.4f"|format(
-                        credits.remaining
-                    ) }}
-                </strong>
-
-            </div>
+            <span class="section-note">
+                Live provider data
+            </span>
 
         </div>
 
 
-        <div class="credit-progress">
+        <section class="metric-grid">
 
-            <div class="progress-info">
+            <article class="metric-card">
 
-                <span>
-                    Credit Usage
-                </span>
-
-                <span>
-                    {{ "%.1f"|format(
-                        credits.usage_percent
-                    ) }}%
-                </span>
-
-            </div>
-
-
-            <div class="progress-track">
-
-                <div
-                    class="progress-fill"
-                    style="width: {{ credits.usage_percent }}%"
-                ></div>
-
-            </div>
-
-
-            {% if credits.total_credits == 0 %}
-
-            <p class="credit-note">
-                No paid OpenRouter credits
-                detected yet.
-            </p>
-
-            {% endif %}
-
-        </div>
-
-        {% else %}
-
-        <p class="credit-note">
-            Credit information unavailable:
-            {{ credits.error }}
-        </p>
-
-        {% endif %}
-
-    </section>
-
-
-    <!-- DEEPSEEK BALANCE -->
-    <section class="panel deepseek-panel">
-
-        <div class="panel-header">
-
-            <div>
-
-                <p class="eyebrow">
-                    DEEPSEEK
+                <p>
+                    Total Balance
                 </p>
 
-                <h2>
-                    Account Balance
-                </h2>
-
-            </div>
-
-        </div>
-
-
-        {% if deepseek.connected %}
-
-        <div class="credit-summary">
-
-            <div>
-
-                <span>
-                    Available Balance
-                </span>
-
-                <strong>
+                <h3>
                     ${{ "%.2f"|format(
-                        deepseek.total_balance
+                        summary.total_balance
                     ) }}
-                </strong>
-
-            </div>
-
-
-            <div>
+                </h3>
 
                 <span>
-                    Top-up Balance
+                    Across connected providers
                 </span>
 
-                <strong>
-                    ${{ "%.2f"|format(
-                        deepseek.topped_up_balance
-                    ) }}
-                </strong>
-
-            </div>
+            </article>
 
 
-            <div>
+            <article class="metric-card">
+
+                <p>
+                    Active Providers
+                </p>
+
+                <h3>
+                    {{ summary.active_providers }}
+                </h3>
 
                 <span>
-                    Granted Credit
+                    {{ summary.integration_count }}
+                    integrations available
                 </span>
 
-                <strong>
-                    ${{ "%.2f"|format(
-                        deepseek.granted_balance
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    Tracked Spend
+                </p>
+
+                <h3>
+
+                    {% if summary.tracked_spend is not none %}
+
+                    ${{ "%.4f"|format(
+                        summary.tracked_spend
                     ) }}
-                </strong>
 
-            </div>
+                    {% else %}
 
-        </div>
+                    —
 
+                    {% endif %}
 
-        <p class="credit-note">
+                </h3>
 
-            API Status:
+                <span>
+                    Supported billing telemetry
+                </span>
 
-            {% if deepseek.is_available %}
-
-            <span class="inline-online">
-                ● Available
-            </span>
-
-            {% else %}
-
-            <span class="inline-offline">
-                ● Unavailable
-            </span>
-
-            {% endif %}
-
-        </p>
-
-        {% else %}
-
-        <p class="credit-note">
-
-            DeepSeek unavailable:
-
-            {{ deepseek.error }}
-
-        </p>
-
-        {% endif %}
-
-    </section>
+            </article>
 
 
-    <!-- DEEPSEEK HISTORY -->
-    <section class="panel chart-panel">
+            <article class="metric-card">
 
-        <div class="panel-header">
-
-            <div>
-
-                <p class="eyebrow">
-                    DEEPSEEK
+                <p>
+                    Total Requests
                 </p>
 
-                <h2>
-                    Balance History
-                </h2>
+                <h3>
+                    —
+                </h3>
 
-            </div>
+                <span>
+                    Analytics adapter coming next
+                </span>
 
-        </div>
-
-
-        <div class="chart-container">
-
-            <canvas
-                id="deepseekChart"
-            ></canvas>
-
-            <p
-                id="deepseekChartEmpty"
-                class="chart-empty"
-            >
-                No DeepSeek balance
-                history available.
-            </p>
-
-        </div>
-
-    </section>
+            </article>
 
 
-    <!-- OPENROUTER HISTORY -->
-    <section class="panel chart-panel">
+            <article class="metric-card">
 
-        <div class="panel-header">
-
-            <div>
-
-                <p class="eyebrow">
-                    OPENROUTER
+                <p>
+                    Total Tokens
                 </p>
 
-                <h2>
-                    Usage History
-                </h2>
+                <h3>
+                    —
+                </h3>
 
-            </div>
+                <span>
+                    Analytics adapter coming next
+                </span>
 
-        </div>
-
-
-        <div class="chart-container">
-
-            <canvas
-                id="openrouterChart"
-            ></canvas>
-
-            <p
-                id="openrouterChartEmpty"
-                class="chart-empty"
-            >
-                No OpenRouter usage
-                history available.
-            </p>
-
-        </div>
-
-    </section>
+            </article>
 
 
-    <!-- PROVIDERS -->
-    <section class="panel">
+            <article class="metric-card">
 
-        <div class="panel-header">
-
-            <div>
-
-                <p class="eyebrow">
-                    PROVIDERS
+                <p>
+                    Integration Templates
                 </p>
 
-                <h2>
-                    API Connections
-                </h2>
+                <h3>
+                    {{ summary.template_count }}
+                </h3>
 
-            </div>
+                <span>
+                    Ready for future providers
+                </span>
 
-        </div>
+            </article>
+
+        </section>
 
 
-        <div class="provider-list">
+        <section class="panel">
 
-
-            <!-- OPENROUTER -->
-            <div class="provider">
+            <div class="panel-heading">
 
                 <div>
 
-                    <div class="provider-title">
+                    <p class="eyebrow">
+                        PROVIDER SUMMARY
+                    </p>
+
+                    <h2>
+                        Connected Accounts
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="overview-provider-grid">
+
+                <article class="provider-overview-card">
+
+                    <div class="provider-card-header">
+
+                        <div>
+
+                            <strong>
+                                OpenRouter
+                            </strong>
+
+                            <p>
+                                Multi-model gateway
+                            </p>
+
+                        </div>
+
+
+                        {% if openrouter.connected %}
+
+                        <span class="badge success">
+                            Connected
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge danger">
+                            Offline
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="provider-stats">
+
+                        <div>
+
+                            <span>
+                                Balance
+                            </span>
+
+                            <strong>
+                                ${{ "%.4f"|format(
+                                    credits.remaining
+                                ) }}
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Tracked Spend
+                            </span>
+
+                            <strong>
+                                ${{ "%.4f"|format(
+                                    credits.total_usage
+                                ) }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+
+                <article class="provider-overview-card">
+
+                    <div class="provider-card-header">
+
+                        <div>
+
+                            <strong>
+                                DeepSeek
+                            </strong>
+
+                            <p>
+                                Direct DeepSeek API
+                            </p>
+
+                        </div>
+
+
+                        {% if deepseek.connected %}
+
+                        <span class="badge success">
+                            Connected
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge danger">
+                            Offline
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="provider-stats">
+
+                        <div>
+
+                            <span>
+                                Balance
+                            </span>
+
+                            <strong>
+                                ${{ "%.2f"|format(
+                                    deepseek.total_balance
+                                ) }}
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                API
+                            </span>
+
+                            <strong>
+
+                                {% if deepseek.is_available %}
+                                    Available
+                                {% else %}
+                                    Unavailable
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        TELEMETRY COVERAGE
+                    </p>
+
+                    <h2>
+                        What is currently tracked?
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="coverage-grid">
+
+                <div class="coverage-row">
+
+                    <div>
 
                         <strong>
                             OpenRouter
                         </strong>
 
-                        {% if openrouter.connected %}
-
-                        <span class="badge connected">
-                            Connected
-                        </span>
-
-                        {% else %}
-
-                        <span class="badge error">
-                            Offline
-                        </span>
-
-                        {% endif %}
+                        <p>
+                            Balance, spend and
+                            usage snapshots
+                        </p>
 
                     </div>
 
-
-                    {% if openrouter.connected %}
-
-                    <p>
-                        Key:
-                        {{ openrouter.label or "Unnamed key" }}
-                    </p>
-
-                    <p>
-
-                        Tier:
-
-                        {% if openrouter.is_free_tier %}
-                            Free
-                        {% else %}
-                            Standard
-                        {% endif %}
-
-                    </p>
-
-                    {% else %}
-
-                    <p>
-                        {{ openrouter.error }}
-                    </p>
-
-                    {% endif %}
-
-                </div>
-
-
-                {% if openrouter.connected %}
-
-                <div class="provider-metric">
-
-                    <span>
-                        Total key usage
+                    <span class="badge success">
+                        Live
                     </span>
 
-                    <strong>
-                        ${{ "%.4f"|format(
-                            openrouter.usage
-                        ) }}
-                    </strong>
-
                 </div>
 
-                {% endif %}
 
-            </div>
+                <div class="coverage-row">
 
-
-            <!-- DEEPSEEK -->
-            <div class="provider">
-
-                <div>
-
-                    <div class="provider-title">
+                    <div>
 
                         <strong>
                             DeepSeek
                         </strong>
 
-                        {% if deepseek.connected %}
+                        <p>
+                            Balance and
+                            balance history
+                        </p>
 
-                        <span class="badge connected">
-                            Connected
-                        </span>
+                    </div>
 
-                        {% else %}
+                    <span class="badge success">
+                        Live
+                    </span>
 
-                        <span class="badge error">
-                            Offline
-                        </span>
+                </div>
 
-                        {% endif %}
+
+                <div class="coverage-row">
+
+                    <div>
+
+                        <strong>
+                            Requests & Tokens
+                        </strong>
+
+                        <p>
+                            Provider analytics adapters
+                            will supply these metrics
+                        </p>
+
+                    </div>
+
+                    <span class="badge neutral">
+                        Next
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </section>
+
+
+    <!-- OPENROUTER -->
+
+    <section
+        class="tab-panel"
+        data-tab-panel="openrouter"
+    >
+
+        <div class="section-heading">
+
+            <div>
+
+                <p class="eyebrow">
+                    PROVIDER
+                </p>
+
+                <h2>
+                    OpenRouter
+                </h2>
+
+            </div>
+
+
+            {% if openrouter.connected %}
+
+            <span class="badge success">
+                Connected
+            </span>
+
+            {% else %}
+
+            <span class="badge danger">
+                Offline
+            </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <section class="metric-grid">
+
+            <article class="metric-card">
+
+                <p>
+                    Remaining Credit
+                </p>
+
+                <h3>
+                    ${{ "%.4f"|format(
+                        credits.remaining
+                    ) }}
+                </h3>
+
+                <span>
+                    Account balance
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    Total Spend
+                </p>
+
+                <h3>
+                    ${{ "%.4f"|format(
+                        credits.total_usage
+                    ) }}
+                </h3>
+
+                <span>
+                    Account usage
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    Today
+                </p>
+
+                <h3>
+                    ${{ "%.4f"|format(
+                        openrouter.usage_daily
+                    ) }}
+                </h3>
+
+                <span>
+                    Key usage
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    This Week
+                </p>
+
+                <h3>
+                    ${{ "%.4f"|format(
+                        openrouter.usage_weekly
+                    ) }}
+                </h3>
+
+                <span>
+                    Key usage
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    This Month
+                </p>
+
+                <h3>
+                    ${{ "%.4f"|format(
+                        openrouter.usage_monthly
+                    ) }}
+                </h3>
+
+                <span>
+                    Key usage
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    API Tier
+                </p>
+
+                <h3 class="text-value">
+
+                    {% if openrouter.is_free_tier %}
+                        Free
+                    {% else %}
+                        Standard
+                    {% endif %}
+
+                </h3>
+
+                <span>
+                    Current API key
+                </span>
+
+            </article>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        HISTORY
+                    </p>
+
+                    <h2>
+                        OpenRouter Usage
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="chart-container">
+
+                <canvas
+                    id="openrouterChart"
+                ></canvas>
+
+                <p
+                    id="openrouterChartEmpty"
+                    class="chart-empty"
+                >
+                    No OpenRouter usage history.
+                </p>
+
+            </div>
+
+        </section>
+
+    </section>
+
+
+    <!-- DEEPSEEK -->
+
+    <section
+        class="tab-panel"
+        data-tab-panel="deepseek"
+    >
+
+        <div class="section-heading">
+
+            <div>
+
+                <p class="eyebrow">
+                    PROVIDER
+                </p>
+
+                <h2>
+                    DeepSeek
+                </h2>
+
+            </div>
+
+
+            {% if deepseek.connected %}
+
+            <span class="badge success">
+                Connected
+            </span>
+
+            {% else %}
+
+            <span class="badge danger">
+                Offline
+            </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <section class="metric-grid">
+
+            <article class="metric-card">
+
+                <p>
+                    Available Balance
+                </p>
+
+                <h3>
+                    ${{ "%.2f"|format(
+                        deepseek.total_balance
+                    ) }}
+                </h3>
+
+                <span>
+                    USD credit
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    Top-up Balance
+                </p>
+
+                <h3>
+                    ${{ "%.2f"|format(
+                        deepseek.topped_up_balance
+                    ) }}
+                </h3>
+
+                <span>
+                    Purchased credit
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    Granted Credit
+                </p>
+
+                <h3>
+                    ${{ "%.2f"|format(
+                        deepseek.granted_balance
+                    ) }}
+                </h3>
+
+                <span>
+                    Promotional credit
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    API Status
+                </p>
+
+                <h3 class="text-value">
+
+                    {% if deepseek.is_available %}
+                        Available
+                    {% else %}
+                        Unavailable
+                    {% endif %}
+
+                </h3>
+
+                <span>
+                    DeepSeek platform
+                </span>
+
+            </article>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        HISTORY
+                    </p>
+
+                    <h2>
+                        DeepSeek Balance
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="chart-container">
+
+                <canvas
+                    id="deepseekChart"
+                ></canvas>
+
+                <p
+                    id="deepseekChartEmpty"
+                    class="chart-empty"
+                >
+                    No DeepSeek balance history.
+                </p>
+
+            </div>
+
+        </section>
+
+    </section>
+
+
+    <!-- INTEGRATIONS -->
+
+    <section
+        class="tab-panel"
+        data-tab-panel="integrations"
+    >
+
+        <div class="section-heading">
+
+            <div>
+
+                <p class="eyebrow">
+                    PROVIDER REGISTRY
+                </p>
+
+                <h2>
+                    Integrations
+                </h2>
+
+                <p class="section-description">
+                    Configure providers through
+                    environment variables.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="integration-grid">
+
+            {% for provider in integrations %}
+
+            <article class="integration-card">
+
+                <div class="integration-header">
+
+                    <div>
+
+                        <h3>
+                            {{ provider.name }}
+                        </h3>
+
+                        <p>
+                            {{ provider.company }}
+                        </p>
 
                     </div>
 
 
-                    {% if deepseek.connected %}
+                    {% if provider.status == "connected" %}
 
-                    <p>
-                        Direct DeepSeek API
-                    </p>
+                    <span class="badge success">
+                        Connected
+                    </span>
 
-                    <p>
+                    {% elif provider.status == "template_configured" %}
 
-                        Status:
+                    <span class="badge warning">
+                        Template Configured
+                    </span>
 
-                        {% if deepseek.is_available %}
-                            Available
-                        {% else %}
-                            Unavailable
-                        {% endif %}
+                    {% elif provider.status == "error" %}
 
-                    </p>
+                    <span class="badge danger">
+                        Error
+                    </span>
 
                     {% else %}
 
-                    <p>
-                        {{ deepseek.error }}
-                    </p>
+                    <span class="badge neutral">
+                        Not Configured
+                    </span>
 
                     {% endif %}
 
                 </div>
 
 
-                {% if deepseek.connected %}
+                <p class="integration-description">
+                    {{ provider.description }}
+                </p>
 
-                <div class="provider-metric">
 
-                    <span>
-                        Current balance
-                    </span>
+                <div class="capability-list">
 
-                    <strong>
-                        ${{ "%.2f"|format(
-                            deepseek.total_balance
-                        ) }}
-                    </strong>
+                    {% if provider.capabilities.balance %}
+                    <span>Balance</span>
+                    {% endif %}
+
+                    {% if provider.capabilities.cost %}
+                    <span>Cost</span>
+                    {% endif %}
+
+                    {% if provider.capabilities.tokens %}
+                    <span>Tokens</span>
+                    {% endif %}
+
+                    {% if provider.capabilities.requests %}
+                    <span>Requests</span>
+                    {% endif %}
+
+                    {% if provider.capabilities.model_breakdown %}
+                    <span>Models</span>
+                    {% endif %}
 
                 </div>
+
+
+                {% if provider.template %}
+
+                <p class="template-note">
+                    Integration template
+                </p>
+
+                {% else %}
+
+                <p class="live-note">
+                    Implemented integration
+                </p>
 
                 {% endif %}
 
-            </div>
+            </article>
 
-
-            <!-- AGENTROUTER -->
-            <div class="provider">
-
-                <div>
-
-                    <div class="provider-title">
-
-                        <strong>
-                            AgentRouter
-                        </strong>
-
-                        <span class="badge planned">
-                            Planned
-                        </span>
-
-                    </div>
-
-                    <p>
-                        Additional AI provider
-                    </p>
-
-                </div>
-
-            </div>
+            {% endfor %}
 
         </div>
 
@@ -703,11 +1002,19 @@
 
 
     <footer>
-        AI API Cost Dashboard
-        v{{ version }}
+
+        <span>
+            AI API Cost Dashboard
+            v{{ version }}
+        </span>
+
+        <span>
+            Self-hosted · Docker · FastAPI
+        </span>
+
     </footer>
 
-</main>
+</div>
 
 
 <script
