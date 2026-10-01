@@ -123,7 +123,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AI API Cost Dashboard",
-    version="0.5.0",
+    version="0.6.0",
     description=(
         "Dashboard untuk memonitor biaya "
         "dan penggunaan AI API."
@@ -168,6 +168,17 @@ async def dashboard(request: Request):
         "error": None,
     }
 
+    deepseek = {
+        "connected": False,
+        "is_available": False,
+        "currency": "USD",
+        "total_balance": 0,
+        "topped_up_balance": 0,
+        "granted_balance": 0,
+        "error": None,
+    }
+
+    # OpenRouter key usage
     try:
         data = await get_key_info()
 
@@ -198,6 +209,7 @@ async def dashboard(request: Request):
     except OpenRouterError as exc:
         openrouter["error"] = str(exc)
 
+    # OpenRouter account credits
     try:
         credit_data = await get_credits()
 
@@ -218,7 +230,11 @@ async def dashboard(request: Request):
 
         if total_credits > 0:
             usage_percent = min(
-                (total_usage / total_credits) * 100,
+                (
+                    total_usage
+                    / total_credits
+                )
+                * 100,
                 100,
             )
 
@@ -235,19 +251,91 @@ async def dashboard(request: Request):
     except OpenRouterError as exc:
         credits["error"] = str(exc)
 
-    connected_providers = (
-        1 if openrouter["connected"] else 0
+    # DeepSeek balance
+    try:
+        deepseek_data = (
+            await get_deepseek_balance()
+        )
+
+        balances = deepseek_data.get(
+            "balance_infos",
+            [],
+        )
+
+        usd_balance = next(
+            (
+                item
+                for item in balances
+                if item.get("currency") == "USD"
+            ),
+            None,
+        )
+
+        if usd_balance:
+            deepseek.update(
+                {
+                    "connected": True,
+                    "is_available": (
+                        deepseek_data.get(
+                            "is_available",
+                            False,
+                        )
+                    ),
+                    "currency": "USD",
+                    "total_balance": float(
+                        usd_balance.get(
+                            "total_balance"
+                        )
+                        or 0
+                    ),
+                    "topped_up_balance": float(
+                        usd_balance.get(
+                            "topped_up_balance"
+                        )
+                        or 0
+                    ),
+                    "granted_balance": float(
+                        usd_balance.get(
+                            "granted_balance"
+                        )
+                        or 0
+                    ),
+                }
+            )
+
+        else:
+            deepseek["connected"] = True
+            deepseek["is_available"] = (
+                deepseek_data.get(
+                    "is_available",
+                    False,
+                )
+            )
+
+    except DeepSeekError as exc:
+        deepseek["error"] = str(exc)
+
+    connected_providers = sum(
+        [
+            1 if openrouter["connected"] else 0,
+            1 if deepseek["connected"] else 0,
+        ]
     )
 
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
         context={
-            "app_name": "AI API Cost Dashboard",
-            "version": "0.5.0",
-            "connected_providers": connected_providers,
+            "app_name": (
+                "AI API Cost Dashboard"
+            ),
+            "version": "0.6.0",
+            "connected_providers": (
+                connected_providers
+            ),
             "openrouter": openrouter,
             "credits": credits,
+            "deepseek": deepseek,
         },
     )
 
@@ -257,7 +345,7 @@ async def health():
     return {
         "status": "ok",
         "service": "ai-api-cost-dashboard",
-        "version": "0.5.0",
+        "version": "0.6.0",
     }
 
 

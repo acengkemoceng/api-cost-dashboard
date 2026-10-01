@@ -21,6 +21,7 @@
 
 <main class="container">
 
+    <!-- HEADER -->
     <header class="header">
 
         <div>
@@ -28,7 +29,9 @@
                 AI API MONITORING
             </p>
 
-            <h1>{{ app_name }}</h1>
+            <h1>
+                {{ app_name }}
+            </h1>
 
             <p class="subtitle">
                 Monitor AI provider usage, balance,
@@ -55,10 +58,14 @@
     </header>
 
 
+    <!-- SUMMARY CARDS -->
     <section class="cards">
 
         <article class="card">
-            <p>Connected Providers</p>
+
+            <p>
+                Connected Providers
+            </p>
 
             <h2>
                 {{ connected_providers }}
@@ -67,88 +74,141 @@
             <span>
                 of 3 configured providers
             </span>
+
         </article>
 
 
         <article class="card">
-            <p>Remaining Credit</p>
+
+            <p>
+                DeepSeek Balance
+            </p>
 
             <h2>
-                ${{ "%.4f"|format(credits.remaining) }}
+                ${{ "%.2f"|format(
+                    deepseek.total_balance
+                ) }}
             </h2>
 
             <span>
-                OpenRouter account
+                Available USD credit
             </span>
+
         </article>
 
 
         <article class="card">
-            <p>Total Spent</p>
+
+            <p>
+                OpenRouter Credit
+            </p>
 
             <h2>
-                ${{ "%.4f"|format(credits.total_usage) }}
+                ${{ "%.4f"|format(
+                    credits.remaining
+                ) }}
             </h2>
 
             <span>
-                OpenRouter account
+                Remaining account credit
             </span>
+
         </article>
 
 
         <article class="card">
-            <p>Today</p>
+
+            <p>
+                OpenRouter Spent
+            </p>
 
             <h2>
-                ${{ "%.4f"|format(openrouter.usage_daily) }}
+                ${{ "%.4f"|format(
+                    credits.total_usage
+                ) }}
             </h2>
 
             <span>
-                OpenRouter usage
+                Total account usage
             </span>
+
         </article>
 
 
         <article class="card">
-            <p>This Week</p>
+
+            <p>
+                Today
+            </p>
 
             <h2>
-                ${{ "%.4f"|format(openrouter.usage_weekly) }}
+                ${{ "%.4f"|format(
+                    openrouter.usage_daily
+                ) }}
             </h2>
 
             <span>
-                OpenRouter usage
+                OpenRouter daily usage
             </span>
+
         </article>
 
 
         <article class="card">
-            <p>This Month</p>
+
+            <p>
+                This Week
+            </p>
 
             <h2>
-                ${{ "%.4f"|format(openrouter.usage_monthly) }}
+                ${{ "%.4f"|format(
+                    openrouter.usage_weekly
+                ) }}
             </h2>
 
             <span>
-                OpenRouter usage
+                OpenRouter weekly usage
             </span>
+
+        </article>
+
+
+        <article class="card">
+
+            <p>
+                This Month
+            </p>
+
+            <h2>
+                ${{ "%.4f"|format(
+                    openrouter.usage_monthly
+                ) }}
+            </h2>
+
+            <span>
+                OpenRouter monthly usage
+            </span>
+
         </article>
 
     </section>
 
 
+    <!-- OPENROUTER ACCOUNT -->
     <section class="panel credit-panel">
 
         <div class="panel-header">
 
             <div>
+
                 <p class="eyebrow">
-                    OPENROUTER CREDIT
+                    OPENROUTER
                 </p>
 
                 <h2>
                     Account Balance
                 </h2>
+
             </div>
 
         </div>
@@ -159,29 +219,47 @@
         <div class="credit-summary">
 
             <div>
-                <span>Total Credits</span>
+
+                <span>
+                    Total Credits
+                </span>
 
                 <strong>
-                    ${{ "%.4f"|format(credits.total_credits) }}
+                    ${{ "%.4f"|format(
+                        credits.total_credits
+                    ) }}
                 </strong>
+
             </div>
 
 
             <div>
-                <span>Used</span>
+
+                <span>
+                    Used
+                </span>
 
                 <strong>
-                    ${{ "%.4f"|format(credits.total_usage) }}
+                    ${{ "%.4f"|format(
+                        credits.total_usage
+                    ) }}
                 </strong>
+
             </div>
 
 
             <div>
-                <span>Remaining</span>
+
+                <span>
+                    Remaining
+                </span>
 
                 <strong>
-                    ${{ "%.4f"|format(credits.remaining) }}
+                    ${{ "%.4f"|format(
+                        credits.remaining
+                    ) }}
                 </strong>
+
             </div>
 
         </div>
@@ -192,11 +270,13 @@
             <div class="progress-info">
 
                 <span>
-                    Credit usage
+                    Credit Usage
                 </span>
 
                 <span>
-                    {{ "%.1f"|format(credits.usage_percent) }}%
+                    {{ "%.1f"|format(
+                        credits.usage_percent
+                    ) }}%
                 </span>
 
             </div>
@@ -225,8 +305,11 @@
         {% else %}
 
         <p class="credit-note">
+
             Credit information unavailable:
+
             {{ credits.error }}
+
         </p>
 
         {% endif %}
@@ -234,11 +317,119 @@
     </section>
 
 
+    <!-- DEEPSEEK ACCOUNT -->
+    <section class="panel deepseek-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <p class="eyebrow">
+                    DEEPSEEK
+                </p>
+
+                <h2>
+                    Account Balance
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        {% if deepseek.connected %}
+
+        <div class="credit-summary">
+
+            <div>
+
+                <span>
+                    Available Balance
+                </span>
+
+                <strong>
+                    ${{ "%.2f"|format(
+                        deepseek.total_balance
+                    ) }}
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Top-up Balance
+                </span>
+
+                <strong>
+                    ${{ "%.2f"|format(
+                        deepseek.topped_up_balance
+                    ) }}
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Granted Credit
+                </span>
+
+                <strong>
+                    ${{ "%.2f"|format(
+                        deepseek.granted_balance
+                    ) }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <p class="credit-note">
+
+            API Status:
+
+            {% if deepseek.is_available %}
+
+            <span class="inline-online">
+                ● Available
+            </span>
+
+            {% else %}
+
+            <span class="inline-offline">
+                ● Unavailable
+            </span>
+
+            {% endif %}
+
+        </p>
+
+        {% else %}
+
+        <p class="credit-note">
+
+            DeepSeek unavailable:
+
+            {{ deepseek.error }}
+
+        </p>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- OPENROUTER HISTORY CHART -->
     <section class="panel chart-panel">
 
         <div class="panel-header">
 
             <div>
+
                 <p class="eyebrow">
                     OPENROUTER
                 </p>
@@ -246,6 +437,7 @@
                 <h2>
                     Usage History
                 </h2>
+
             </div>
 
         </div>
@@ -256,6 +448,7 @@
             <canvas
                 id="openrouterChart"
             ></canvas>
+
 
             <p
                 id="chartEmpty"
@@ -269,11 +462,13 @@
     </section>
 
 
+    <!-- PROVIDERS -->
     <section class="panel">
 
         <div class="panel-header">
 
             <div>
+
                 <p class="eyebrow">
                     PROVIDERS
                 </p>
@@ -281,6 +476,7 @@
                 <h2>
                     API Connections
                 </h2>
+
             </div>
 
         </div>
@@ -288,6 +484,8 @@
 
         <div class="provider-list">
 
+
+            <!-- OPENROUTER -->
             <div class="provider">
 
                 <div>
@@ -297,6 +495,7 @@
                         <strong>
                             OpenRouter
                         </strong>
+
 
                         {% if openrouter.connected %}
 
@@ -322,13 +521,21 @@
                         {{ openrouter.label or "Unnamed key" }}
                     </p>
 
+
                     <p>
+
                         Tier:
+
                         {% if openrouter.is_free_tier %}
+
                             Free
+
                         {% else %}
+
                             Standard
+
                         {% endif %}
+
                     </p>
 
                     {% else %}
@@ -342,6 +549,8 @@
                 </div>
 
 
+                {% if openrouter.connected %}
+
                 <div class="provider-metric">
 
                     <span>
@@ -349,14 +558,19 @@
                     </span>
 
                     <strong>
-                        ${{ "%.4f"|format(openrouter.usage) }}
+                        ${{ "%.4f"|format(
+                            openrouter.usage
+                        ) }}
                     </strong>
 
                 </div>
 
+                {% endif %}
+
             </div>
 
 
+            <!-- DEEPSEEK -->
             <div class="provider">
 
                 <div>
@@ -367,21 +581,79 @@
                             DeepSeek
                         </strong>
 
-                        <span class="badge planned">
-                            Planned
+
+                        {% if deepseek.connected %}
+
+                        <span class="badge connected">
+                            Connected
                         </span>
 
+                        {% else %}
+
+                        <span class="badge error">
+                            Offline
+                        </span>
+
+                        {% endif %}
+
                     </div>
+
+
+                    {% if deepseek.connected %}
 
                     <p>
                         Direct DeepSeek API
                     </p>
 
+                    <p>
+
+                        Status:
+
+                        {% if deepseek.is_available %}
+
+                            Available
+
+                        {% else %}
+
+                            Unavailable
+
+                        {% endif %}
+
+                    </p>
+
+                    {% else %}
+
+                    <p>
+                        {{ deepseek.error }}
+                    </p>
+
+                    {% endif %}
+
                 </div>
+
+
+                {% if deepseek.connected %}
+
+                <div class="provider-metric">
+
+                    <span>
+                        Current balance
+                    </span>
+
+                    <strong>
+                        ${{ "%.2f"|format(
+                            deepseek.total_balance
+                        ) }}
+                    </strong>
+
+                </div>
+
+                {% endif %}
 
             </div>
 
 
+            <!-- AGENTROUTER -->
             <div class="provider">
 
                 <div>
@@ -411,19 +683,28 @@
     </section>
 
 
+    <!-- FOOTER -->
     <footer>
+
         AI API Cost Dashboard
         v{{ version }}
+
     </footer>
 
 </main>
 
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- CHART.JS -->
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+></script>
 
+
+<!-- DASHBOARD JS -->
 <script
     src="{{ url_for('static', path='/dashboard.js') }}"
 ></script>
 
 </body>
+
 </html>

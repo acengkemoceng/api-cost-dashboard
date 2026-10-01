@@ -497,3 +497,17 @@ footer {
         height: 280px;
     }
 }
+
+.deepseek-panel {
+    margin-bottom: 24px;
+}
+
+.inline-online {
+    color: #5ee69b;
+    font-weight: 600;
+}
+
+.inline-offline {
+    color: #ff7b7b;
+    font-weight: 600;
+}
