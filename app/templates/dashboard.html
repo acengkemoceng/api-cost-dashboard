@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ app_name }}</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', path='/style.css') }}"
+    >
+</head>
+
+<body>
+
+<main class="container">
+
+    <header class="header">
+
+        <div>
+            <p class="eyebrow">AI API MONITORING</p>
+
+            <h1>{{ app_name }}</h1>
+
+            <p class="subtitle">
+                Monitor AI provider usage and spending
+                from one local dashboard.
+            </p>
+        </div>
+
+        <div class="header-actions">
+
+            <a class="refresh-button" href="/">
+                Refresh
+            </a>
+
+            <span class="status">
+                ● Online
+            </span>
+
+        </div>
+
+    </header>
+
+
+    <section class="cards">
+
+        <article class="card">
+            <p>Connected Providers</p>
+
+            <h2>{{ connected_providers }}</h2>
+
+            <span>
+                of 3 configured providers
+            </span>
+        </article>
+
+
+        <article class="card">
+            <p>OpenRouter Today</p>
+
+            <h2>
+                ${{ "%.4f"|format(openrouter.usage_daily) }}
+            </h2>
+
+            <span>
+                Daily API usage
+            </span>
+        </article>
+
+
+        <article class="card">
+            <p>OpenRouter This Week</p>
+
+            <h2>
+                ${{ "%.4f"|format(openrouter.usage_weekly) }}
+            </h2>
+
+            <span>
+                Weekly API usage
+            </span>
+        </article>
+
+
+        <article class="card">
+            <p>OpenRouter This Month</p>
+
+            <h2>
+                ${{ "%.4f"|format(openrouter.usage_monthly) }}
+            </h2>
+
+            <span>
+                Monthly API usage
+            </span>
+        </article>
+
+    </section>
+
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+                <p class="eyebrow">PROVIDERS</p>
+                <h2>API Connections</h2>
+            </div>
+
+        </div>
+
+
+        <div class="provider-list">
+
+            <div class="provider">
+
+                <div>
+
+                    <div class="provider-title">
+
+                        <strong>
+                            OpenRouter
+                        </strong>
+
+                        {% if openrouter.connected %}
+
+                            <span class="badge connected">
+                                Connected
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge error">
+                                Offline
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    {% if openrouter.connected %}
+
+                        <p>
+                            Key:
+                            {{ openrouter.label or "Unnamed key" }}
+                        </p>
+
+                        <p>
+                            Tier:
+                            {% if openrouter.is_free_tier %}
+                                Free
+                            {% else %}
+                                Standard
+                            {% endif %}
+                        </p>
+
+                    {% else %}
+
+                        <p>
+                            {{ openrouter.error }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="provider-metric">
+
+                    <span>Total key usage</span>
+
+                    <strong>
+                        ${{ "%.4f"|format(openrouter.usage) }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="provider">
+
+                <div>
+
+                    <div class="provider-title">
+
+                        <strong>
+                            DeepSeek
+                        </strong>
+
+                        <span class="badge planned">
+                            Planned
+                        </span>
+
+                    </div>
+
+                    <p>
+                        Direct DeepSeek API
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="provider">
+
+                <div>
+
+                    <div class="provider-title">
+
+                        <strong>
+                            AgentRouter
+                        </strong>
+
+                        <span class="badge planned">
+                            Planned
+                        </span>
+
+                    </div>
+
+                    <p>
+                        Additional AI provider
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <footer>
+        AI API Cost Dashboard v{{ version }}
+    </footer>
+
+</main>
+
+</body>
+</html>
