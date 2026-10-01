@@ -206,8 +206,19 @@ async def provider_collector(
 
     while True:
 
-        await collect_openrouter(app)
-        await collect_deepseek(app)
+        if os.getenv(
+            "OPENROUTER_API_KEY"
+        ):
+            await collect_openrouter(
+                app
+            )
+
+        if os.getenv(
+            "DEEPSEEK_API_KEY"
+        ):
+            await collect_deepseek(
+                app
+            )
 
         await asyncio.sleep(
             interval
@@ -236,19 +247,36 @@ async def lifespan(
         },
     }
 
-    collector_task = asyncio.create_task(
-        provider_collector(app)
-    )
+    collector_task = None
+
+    if not is_demo_mode():
+
+        collector_task = (
+            asyncio.create_task(
+                provider_collector(
+                    app
+                )
+            )
+        )
+
+    else:
+
+        logger.info(
+            "Demo mode enabled. "
+            "Live provider collectors disabled."
+        )
 
     yield
 
-    collector_task.cancel()
+    if collector_task:
 
-    try:
-        await collector_task
+        collector_task.cancel()
 
-    except asyncio.CancelledError:
-        pass
+        try:
+            await collector_task
+
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(
