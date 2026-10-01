@@ -24,7 +24,9 @@
     <header class="header">
 
         <div>
-            <p class="eyebrow">AI API MONITORING</p>
+            <p class="eyebrow">
+                AI API MONITORING
+            </p>
 
             <h1>{{ app_name }}</h1>
 
@@ -34,9 +36,13 @@
             </p>
         </div>
 
+
         <div class="header-actions">
 
-            <a class="refresh-button" href="/">
+            <a
+                class="refresh-button"
+                href="/"
+            >
                 Refresh
             </a>
 
@@ -52,18 +58,27 @@
     <section class="cards">
 
         <article class="card">
-            <p>Connected Providers</p>
 
-            <h2>{{ connected_providers }}</h2>
+            <p>
+                Connected Providers
+            </p>
+
+            <h2>
+                {{ connected_providers }}
+            </h2>
 
             <span>
                 of 3 configured providers
             </span>
+
         </article>
 
 
         <article class="card">
-            <p>OpenRouter Today</p>
+
+            <p>
+                OpenRouter Today
+            </p>
 
             <h2>
                 ${{ "%.4f"|format(openrouter.usage_daily) }}
@@ -72,11 +87,15 @@
             <span>
                 Daily API usage
             </span>
+
         </article>
 
 
         <article class="card">
-            <p>OpenRouter This Week</p>
+
+            <p>
+                OpenRouter This Week
+            </p>
 
             <h2>
                 ${{ "%.4f"|format(openrouter.usage_weekly) }}
@@ -85,11 +104,15 @@
             <span>
                 Weekly API usage
             </span>
+
         </article>
 
 
         <article class="card">
-            <p>OpenRouter This Month</p>
+
+            <p>
+                OpenRouter This Month
+            </p>
 
             <h2>
                 ${{ "%.4f"|format(openrouter.usage_monthly) }}
@@ -98,7 +121,43 @@
             <span>
                 Monthly API usage
             </span>
+
         </article>
+
+    </section>
+
+
+    <section class="panel chart-panel">
+
+        <div class="panel-header">
+
+            <div>
+                <p class="eyebrow">
+                    OPENROUTER
+                </p>
+
+                <h2>
+                    Usage History
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <canvas
+                id="openrouterChart"
+            ></canvas>
+
+            <p
+                id="chartEmpty"
+                class="chart-empty"
+            >
+                No usage history available.
+            </p>
+
+        </div>
 
     </section>
 
@@ -108,14 +167,20 @@
         <div class="panel-header">
 
             <div>
-                <p class="eyebrow">PROVIDERS</p>
-                <h2>API Connections</h2>
+                <p class="eyebrow">
+                    PROVIDERS
+                </p>
+
+                <h2>
+                    API Connections
+                </h2>
             </div>
 
         </div>
 
 
         <div class="provider-list">
+
 
             <div class="provider">
 
@@ -129,15 +194,15 @@
 
                         {% if openrouter.connected %}
 
-                            <span class="badge connected">
-                                Connected
-                            </span>
+                        <span class="badge connected">
+                            Connected
+                        </span>
 
                         {% else %}
 
-                            <span class="badge error">
-                                Offline
-                            </span>
+                        <span class="badge error">
+                            Offline
+                        </span>
 
                         {% endif %}
 
@@ -146,25 +211,26 @@
 
                     {% if openrouter.connected %}
 
-                        <p>
-                            Key:
-                            {{ openrouter.label or "Unnamed key" }}
-                        </p>
+                    <p>
+                        Key:
+                        {{ openrouter.label or "Unnamed key" }}
+                    </p>
 
-                        <p>
-                            Tier:
-                            {% if openrouter.is_free_tier %}
-                                Free
-                            {% else %}
-                                Standard
-                            {% endif %}
-                        </p>
+                    <p>
+                        Tier:
+
+                        {% if openrouter.is_free_tier %}
+                            Free
+                        {% else %}
+                            Standard
+                        {% endif %}
+                    </p>
 
                     {% else %}
 
-                        <p>
-                            {{ openrouter.error }}
-                        </p>
+                    <p>
+                        {{ openrouter.error }}
+                    </p>
 
                     {% endif %}
 
@@ -173,7 +239,9 @@
 
                 <div class="provider-metric">
 
-                    <span>Total key usage</span>
+                    <span>
+                        Total key usage
+                    </span>
 
                     <strong>
                         ${{ "%.4f"|format(openrouter.usage) }}
@@ -239,10 +307,19 @@
 
 
     <footer>
-        AI API Cost Dashboard v{{ version }}
+        AI API Cost Dashboard
+        v{{ version }}
     </footer>
 
 </main>
 
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script
+    src="{{ url_for('static', path='/dashboard.js') }}"
+></script>
+
 </body>
+
 </html>
