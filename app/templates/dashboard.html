@@ -21,10 +21,10 @@
 
 <main class="container">
 
-    <!-- HEADER -->
     <header class="header">
 
         <div>
+
             <p class="eyebrow">
                 AI API MONITORING
             </p>
@@ -34,9 +34,11 @@
             </h1>
 
             <p class="subtitle">
-                Monitor AI provider usage, balance,
-                and spending from one local dashboard.
+                Monitor AI provider usage,
+                balance, and spending from
+                one local dashboard.
             </p>
+
         </div>
 
 
@@ -58,7 +60,6 @@
     </header>
 
 
-    <!-- SUMMARY CARDS -->
     <section class="cards">
 
         <article class="card">
@@ -137,9 +138,7 @@
 
         <article class="card">
 
-            <p>
-                Today
-            </p>
+            <p>Today</p>
 
             <h2>
                 ${{ "%.4f"|format(
@@ -156,9 +155,7 @@
 
         <article class="card">
 
-            <p>
-                This Week
-            </p>
+            <p>This Week</p>
 
             <h2>
                 ${{ "%.4f"|format(
@@ -175,9 +172,7 @@
 
         <article class="card">
 
-            <p>
-                This Month
-            </p>
+            <p>This Month</p>
 
             <h2>
                 ${{ "%.4f"|format(
@@ -194,7 +189,7 @@
     </section>
 
 
-    <!-- OPENROUTER ACCOUNT -->
+    <!-- OPENROUTER BALANCE -->
     <section class="panel credit-panel">
 
         <div class="panel-header">
@@ -235,9 +230,7 @@
 
             <div>
 
-                <span>
-                    Used
-                </span>
+                <span>Used</span>
 
                 <strong>
                     ${{ "%.4f"|format(
@@ -295,7 +288,8 @@
             {% if credits.total_credits == 0 %}
 
             <p class="credit-note">
-                No paid OpenRouter credits detected yet.
+                No paid OpenRouter credits
+                detected yet.
             </p>
 
             {% endif %}
@@ -305,11 +299,8 @@
         {% else %}
 
         <p class="credit-note">
-
             Credit information unavailable:
-
             {{ credits.error }}
-
         </p>
 
         {% endif %}
@@ -317,7 +308,7 @@
     </section>
 
 
-    <!-- DEEPSEEK ACCOUNT -->
+    <!-- DEEPSEEK BALANCE -->
     <section class="panel deepseek-panel">
 
         <div class="panel-header">
@@ -423,7 +414,46 @@
     </section>
 
 
-    <!-- OPENROUTER HISTORY CHART -->
+    <!-- DEEPSEEK HISTORY -->
+    <section class="panel chart-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <p class="eyebrow">
+                    DEEPSEEK
+                </p>
+
+                <h2>
+                    Balance History
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <canvas
+                id="deepseekChart"
+            ></canvas>
+
+            <p
+                id="deepseekChartEmpty"
+                class="chart-empty"
+            >
+                No DeepSeek balance
+                history available.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- OPENROUTER HISTORY -->
     <section class="panel chart-panel">
 
         <div class="panel-header">
@@ -449,12 +479,12 @@
                 id="openrouterChart"
             ></canvas>
 
-
             <p
-                id="chartEmpty"
+                id="openrouterChartEmpty"
                 class="chart-empty"
             >
-                No usage history available.
+                No OpenRouter usage
+                history available.
             </p>
 
         </div>
@@ -496,7 +526,6 @@
                             OpenRouter
                         </strong>
 
-
                         {% if openrouter.connected %}
 
                         <span class="badge connected">
@@ -521,19 +550,14 @@
                         {{ openrouter.label or "Unnamed key" }}
                     </p>
 
-
                     <p>
 
                         Tier:
 
                         {% if openrouter.is_free_tier %}
-
                             Free
-
                         {% else %}
-
                             Standard
-
                         {% endif %}
 
                     </p>
@@ -581,7 +605,6 @@
                             DeepSeek
                         </strong>
 
-
                         {% if deepseek.connected %}
 
                         <span class="badge connected">
@@ -610,13 +633,9 @@
                         Status:
 
                         {% if deepseek.is_available %}
-
                             Available
-
                         {% else %}
-
                             Unavailable
-
                         {% endif %}
 
                     </p>
@@ -683,24 +702,18 @@
     </section>
 
 
-    <!-- FOOTER -->
     <footer>
-
         AI API Cost Dashboard
         v{{ version }}
-
     </footer>
 
 </main>
 
 
-<!-- CHART.JS -->
 <script
     src="https://cdn.jsdelivr.net/npm/chart.js"
 ></script>
 
-
-<!-- DASHBOARD JS -->
 <script
     src="{{ url_for('static', path='/dashboard.js') }}"
 ></script>

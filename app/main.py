@@ -11,10 +11,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.database import (
+    get_balance_history,
     get_history,
     init_db,
+    save_balance_snapshot,
     save_snapshot,
 )
+
 from app.providers.openrouter import (
     OpenRouterError,
     get_credits,
@@ -26,12 +29,19 @@ from app.providers.deepseek import (
     get_balance as get_deepseek_balance,
 )
 
+from app.providers.agentrouter import (
+    AgentRouterError,
+    get_models as get_agentrouter_models,
+)
+
 
 logger = logging.getLogger(__name__)
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(
+        timezone.utc
+    ).isoformat()
 
 
 def get_snapshot_interval() -> int:
@@ -43,71 +53,202 @@ def get_snapshot_interval() -> int:
             )
         )
 
-        return max(interval, 10)
+        return max(
+            interval,
+            10,
+        )
 
     except ValueError:
         return 900
 
 
-async def openrouter_collector(app: FastAPI):
+def get_deepseek_usd_balance(
+    data: dict,
+) -> dict | None:
+
+    balances = data.get(
+        "balance_infos",
+        [],
+    )
+
+    return next(
+        (
+            item
+            for item in balances
+            if item.get("currency") == "USD"
+        ),
+        None,
+    )
+
+
+async def collect_openrouter(
+    app: FastAPI,
+):
+    status = app.state.collectors[
+        "openrouter"
+    ]
+
+    status["last_attempt"] = utc_now()
+
+    try:
+        data = await get_key_info()
+
+        inserted = await save_snapshot(
+            "openrouter",
+            data,
+        )
+
+        status["last_success"] = utc_now()
+        status["last_inserted"] = inserted
+        status["last_error"] = None
+
+        logger.info(
+            "OpenRouter snapshot checked. "
+            "New snapshot: %s",
+            inserted,
+        )
+
+    except OpenRouterError as exc:
+
+        status["last_error"] = str(exc)
+
+        logger.warning(
+            "OpenRouter collector error: %s",
+            exc,
+        )
+
+    except Exception as exc:
+
+        status["last_error"] = str(exc)
+
+        logger.exception(
+            "Unexpected OpenRouter "
+            "collector error"
+        )
+
+
+async def collect_deepseek(
+    app: FastAPI,
+):
+    status = app.state.collectors[
+        "deepseek"
+    ]
+
+    status["last_attempt"] = utc_now()
+
+    try:
+        data = await get_deepseek_balance()
+
+        usd = get_deepseek_usd_balance(
+            data
+        )
+
+        if usd is None:
+            raise DeepSeekError(
+                "Saldo USD tidak ditemukan."
+            )
+
+        inserted = (
+            await save_balance_snapshot(
+                provider="deepseek",
+                currency="USD",
+                total_balance=float(
+                    usd.get(
+                        "total_balance"
+                    )
+                    or 0
+                ),
+                topped_up_balance=float(
+                    usd.get(
+                        "topped_up_balance"
+                    )
+                    or 0
+                ),
+                granted_balance=float(
+                    usd.get(
+                        "granted_balance"
+                    )
+                    or 0
+                ),
+            )
+        )
+
+        status["last_success"] = utc_now()
+        status["last_inserted"] = inserted
+        status["last_error"] = None
+
+        logger.info(
+            "DeepSeek balance checked. "
+            "New snapshot: %s",
+            inserted,
+        )
+
+    except DeepSeekError as exc:
+
+        status["last_error"] = str(exc)
+
+        logger.warning(
+            "DeepSeek collector error: %s",
+            exc,
+        )
+
+    except Exception as exc:
+
+        status["last_error"] = str(exc)
+
+        logger.exception(
+            "Unexpected DeepSeek "
+            "collector error"
+        )
+
+
+async def provider_collector(
+    app: FastAPI,
+):
     interval = get_snapshot_interval()
 
     logger.info(
-        "OpenRouter collector started "
+        "Provider collector started "
         "with interval %s seconds",
         interval,
     )
 
     while True:
-        app.state.collector_last_attempt = utc_now()
 
-        try:
-            data = await get_key_info()
+        await collect_openrouter(app)
 
-            inserted = await save_snapshot(
-                "openrouter",
-                data,
-            )
+        await collect_deepseek(app)
 
-            app.state.collector_last_success = utc_now()
-            app.state.collector_last_inserted = inserted
-            app.state.collector_last_error = None
-
-            logger.info(
-                "OpenRouter snapshot checked. "
-                "New snapshot: %s",
-                inserted,
-            )
-
-        except OpenRouterError as exc:
-            app.state.collector_last_error = str(exc)
-
-            logger.warning(
-                "OpenRouter collector error: %s",
-                exc,
-            )
-
-        except Exception as exc:
-            app.state.collector_last_error = str(exc)
-
-            logger.exception(
-                "Unexpected collector error"
-            )
-
-        await asyncio.sleep(interval)
+        await asyncio.sleep(
+            interval
+        )
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(
+    app: FastAPI,
+):
     await init_db()
 
-    app.state.collector_last_attempt = None
-    app.state.collector_last_success = None
-    app.state.collector_last_inserted = None
-    app.state.collector_last_error = None
+    app.state.collectors = {
+        "openrouter": {
+            "last_attempt": None,
+            "last_success": None,
+            "last_inserted": None,
+            "last_error": None,
+        },
+        "deepseek": {
+            "last_attempt": None,
+            "last_success": None,
+            "last_inserted": None,
+            "last_error": None,
+        },
+    }
 
-    collector_task = asyncio.create_task(
-        openrouter_collector(app)
+    collector_task = (
+        asyncio.create_task(
+            provider_collector(app)
+        )
     )
 
     yield
@@ -123,10 +264,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AI API Cost Dashboard",
-    version="0.6.0",
+    version="0.7.0",
     description=(
-        "Dashboard untuk memonitor biaya "
-        "dan penggunaan AI API."
+        "Dashboard untuk memonitor biaya, "
+        "saldo, dan penggunaan AI API."
     ),
     lifespan=lifespan,
 )
@@ -134,17 +275,25 @@ app = FastAPI(
 
 app.mount(
     "/static",
-    StaticFiles(directory="app/static"),
+    StaticFiles(
+        directory="app/static"
+    ),
     name="static",
 )
+
 
 templates = Jinja2Templates(
     directory="app/templates",
 )
 
 
-@app.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request):
+@app.get(
+    "/",
+    response_class=HTMLResponse,
+)
+async def dashboard(
+    request: Request,
+):
 
     openrouter = {
         "connected": False,
@@ -185,23 +334,43 @@ async def dashboard(request: Request):
         openrouter.update(
             {
                 "connected": True,
-                "label": data.get("label"),
+                "label": data.get(
+                    "label"
+                ),
                 "is_free_tier": data.get(
                     "is_free_tier"
                 ),
-                "usage": data.get("usage") or 0,
+                "usage": (
+                    data.get(
+                        "usage"
+                    )
+                    or 0
+                ),
                 "usage_daily": (
-                    data.get("usage_daily") or 0
+                    data.get(
+                        "usage_daily"
+                    )
+                    or 0
                 ),
                 "usage_weekly": (
-                    data.get("usage_weekly") or 0
+                    data.get(
+                        "usage_weekly"
+                    )
+                    or 0
                 ),
                 "usage_monthly": (
-                    data.get("usage_monthly") or 0
+                    data.get(
+                        "usage_monthly"
+                    )
+                    or 0
                 ),
-                "limit": data.get("limit"),
-                "limit_remaining": data.get(
-                    "limit_remaining"
+                "limit": data.get(
+                    "limit"
+                ),
+                "limit_remaining": (
+                    data.get(
+                        "limit_remaining"
+                    )
                 ),
             }
         )
@@ -214,21 +383,29 @@ async def dashboard(request: Request):
         credit_data = await get_credits()
 
         total_credits = float(
-            credit_data.get("total_credits") or 0
+            credit_data.get(
+                "total_credits"
+            )
+            or 0
         )
 
         total_usage = float(
-            credit_data.get("total_usage") or 0
+            credit_data.get(
+                "total_usage"
+            )
+            or 0
         )
 
         remaining = max(
-            total_credits - total_usage,
+            total_credits
+            - total_usage,
             0,
         )
 
         usage_percent = 0
 
         if total_credits > 0:
+
             usage_percent = min(
                 (
                     total_usage
@@ -241,10 +418,16 @@ async def dashboard(request: Request):
         credits.update(
             {
                 "connected": True,
-                "total_credits": total_credits,
-                "total_usage": total_usage,
+                "total_credits": (
+                    total_credits
+                ),
+                "total_usage": (
+                    total_usage
+                ),
                 "remaining": remaining,
-                "usage_percent": usage_percent,
+                "usage_percent": (
+                    usage_percent
+                ),
             }
         )
 
@@ -257,45 +440,41 @@ async def dashboard(request: Request):
             await get_deepseek_balance()
         )
 
-        balances = deepseek_data.get(
-            "balance_infos",
-            [],
+        usd = get_deepseek_usd_balance(
+            deepseek_data
         )
 
-        usd_balance = next(
-            (
-                item
-                for item in balances
-                if item.get("currency") == "USD"
-            ),
-            None,
+        deepseek["connected"] = True
+
+        deepseek["is_available"] = (
+            deepseek_data.get(
+                "is_available",
+                False,
+            )
         )
 
-        if usd_balance:
+        if usd:
+
             deepseek.update(
                 {
-                    "connected": True,
-                    "is_available": (
-                        deepseek_data.get(
-                            "is_available",
-                            False,
-                        )
-                    ),
                     "currency": "USD",
+
                     "total_balance": float(
-                        usd_balance.get(
+                        usd.get(
                             "total_balance"
                         )
                         or 0
                     ),
+
                     "topped_up_balance": float(
-                        usd_balance.get(
+                        usd.get(
                             "topped_up_balance"
                         )
                         or 0
                     ),
+
                     "granted_balance": float(
-                        usd_balance.get(
+                        usd.get(
                             "granted_balance"
                         )
                         or 0
@@ -303,22 +482,25 @@ async def dashboard(request: Request):
                 }
             )
 
-        else:
-            deepseek["connected"] = True
-            deepseek["is_available"] = (
-                deepseek_data.get(
-                    "is_available",
-                    False,
-                )
-            )
-
     except DeepSeekError as exc:
         deepseek["error"] = str(exc)
 
     connected_providers = sum(
         [
-            1 if openrouter["connected"] else 0,
-            1 if deepseek["connected"] else 0,
+            (
+                1
+                if openrouter[
+                    "connected"
+                ]
+                else 0
+            ),
+            (
+                1
+                if deepseek[
+                    "connected"
+                ]
+                else 0
+            ),
         ]
     )
 
@@ -329,7 +511,7 @@ async def dashboard(request: Request):
             "app_name": (
                 "AI API Cost Dashboard"
             ),
-            "version": "0.6.0",
+            "version": "0.7.0",
             "connected_providers": (
                 connected_providers
             ),
@@ -342,14 +524,19 @@ async def dashboard(request: Request):
 
 @app.get("/health")
 async def health():
+
     return {
         "status": "ok",
-        "service": "ai-api-cost-dashboard",
-        "version": "0.6.0",
+        "service": (
+            "ai-api-cost-dashboard"
+        ),
+        "version": "0.7.0",
     }
 
 
-@app.get("/api/providers/openrouter")
+@app.get(
+    "/api/providers/openrouter"
+)
 async def openrouter_status():
 
     try:
@@ -358,11 +545,17 @@ async def openrouter_status():
         return {
             "provider": "openrouter",
             "connected": True,
-            "label": data.get("label"),
-            "is_free_tier": data.get(
-                "is_free_tier"
+            "label": data.get(
+                "label"
             ),
-            "usage": data.get("usage"),
+            "is_free_tier": (
+                data.get(
+                    "is_free_tier"
+                )
+            ),
+            "usage": data.get(
+                "usage"
+            ),
             "usage_daily": data.get(
                 "usage_daily"
             ),
@@ -372,9 +565,13 @@ async def openrouter_status():
             "usage_monthly": data.get(
                 "usage_monthly"
             ),
-            "limit": data.get("limit"),
-            "limit_remaining": data.get(
-                "limit_remaining"
+            "limit": data.get(
+                "limit"
+            ),
+            "limit_remaining": (
+                data.get(
+                    "limit_remaining"
+                )
             ),
             "limit_reset": data.get(
                 "limit_reset"
@@ -382,6 +579,7 @@ async def openrouter_status():
         }
 
     except OpenRouterError as exc:
+
         return {
             "provider": "openrouter",
             "connected": False,
@@ -389,34 +587,48 @@ async def openrouter_status():
         }
 
 
-@app.get("/api/providers/openrouter/credits")
+@app.get(
+    "/api/providers/openrouter/credits"
+)
 async def openrouter_credits():
 
     try:
         data = await get_credits()
 
         total_credits = float(
-            data.get("total_credits") or 0
+            data.get(
+                "total_credits"
+            )
+            or 0
         )
 
         total_usage = float(
-            data.get("total_usage") or 0
+            data.get(
+                "total_usage"
+            )
+            or 0
         )
 
         remaining = max(
-            total_credits - total_usage,
+            total_credits
+            - total_usage,
             0,
         )
 
         return {
             "provider": "openrouter",
             "connected": True,
-            "total_credits": total_credits,
-            "total_usage": total_usage,
+            "total_credits": (
+                total_credits
+            ),
+            "total_usage": (
+                total_usage
+            ),
             "remaining": remaining,
         }
 
     except OpenRouterError as exc:
+
         return {
             "provider": "openrouter",
             "connected": False,
@@ -424,7 +636,98 @@ async def openrouter_credits():
         }
 
 
-@app.get("/api/history/openrouter")
+@app.get(
+    "/api/providers/deepseek"
+)
+async def deepseek_status():
+
+    try:
+        data = (
+            await get_deepseek_balance()
+        )
+
+        balances = data.get(
+            "balance_infos",
+            [],
+        )
+
+        normalized = []
+
+        for item in balances:
+
+            normalized.append(
+                {
+                    "currency": (
+                        item.get(
+                            "currency"
+                        )
+                    ),
+
+                    "total_balance": float(
+                        item.get(
+                            "total_balance"
+                        )
+                        or 0
+                    ),
+
+                    "granted_balance": float(
+                        item.get(
+                            "granted_balance"
+                        )
+                        or 0
+                    ),
+
+                    "topped_up_balance": float(
+                        item.get(
+                            "topped_up_balance"
+                        )
+                        or 0
+                    ),
+                }
+            )
+
+        primary = next(
+            (
+                item
+                for item in normalized
+                if item[
+                    "currency"
+                ] == "USD"
+            ),
+            (
+                normalized[0]
+                if normalized
+                else None
+            ),
+        )
+
+        return {
+            "provider": "deepseek",
+            "connected": True,
+            "is_available": (
+                data.get(
+                    "is_available",
+                    False,
+                )
+            ),
+            "primary_balance": (
+                primary
+            ),
+            "balances": normalized,
+        }
+
+    except DeepSeekError as exc:
+
+        return {
+            "provider": "deepseek",
+            "connected": False,
+            "error": str(exc),
+        }
+
+
+@app.get(
+    "/api/history/openrouter"
+)
 async def openrouter_history(
     limit: int = 30,
 ):
@@ -441,91 +744,79 @@ async def openrouter_history(
     }
 
 
-@app.get("/api/collector/status")
+@app.get(
+    "/api/history/deepseek"
+)
+async def deepseek_history(
+    limit: int = 30,
+):
+
+    history = (
+        await get_balance_history(
+            provider="deepseek",
+            currency="USD",
+            limit=limit,
+        )
+    )
+
+    return {
+        "provider": "deepseek",
+        "currency": "USD",
+        "count": len(history),
+        "data": history,
+    }
+
+
+@app.get(
+    "/api/collector/status"
+)
 async def collector_status():
 
     return {
-        "provider": "openrouter",
         "interval_seconds": (
             get_snapshot_interval()
         ),
-        "last_attempt": (
-            app.state.collector_last_attempt
-        ),
-        "last_success": (
-            app.state.collector_last_success
-        ),
-        "last_inserted": (
-            app.state.collector_last_inserted
-        ),
-        "last_error": (
-            app.state.collector_last_error
+        "providers": (
+            app.state.collectors
         ),
     }
 
-@app.get("/api/providers/deepseek")
-async def deepseek_status():
+@app.get(
+    "/api/providers/agentrouter"
+)
+async def agentrouter_status():
 
     try:
-        data = await get_deepseek_balance()
-
-        balances = data.get(
-            "balance_infos",
-            [],
+        models = (
+            await get_agentrouter_models()
         )
 
-        normalized = []
+        model_ids = []
 
-        for item in balances:
-            normalized.append(
-                {
-                    "currency": item.get(
-                        "currency"
-                    ),
-                    "total_balance": float(
-                        item.get(
-                            "total_balance"
-                        ) or 0
-                    ),
-                    "granted_balance": float(
-                        item.get(
-                            "granted_balance"
-                        ) or 0
-                    ),
-                    "topped_up_balance": float(
-                        item.get(
-                            "topped_up_balance"
-                        ) or 0
-                    ),
-                }
-            )
+        for model in models:
+            model_id = model.get("id")
 
-        primary = next(
-            (
-                item
-                for item in normalized
-                if item["currency"] == "USD"
-            ),
-            normalized[0]
-            if normalized
-            else None,
-        )
+            if model_id:
+                model_ids.append(
+                    model_id
+                )
 
         return {
-            "provider": "deepseek",
+            "provider": "agentrouter",
             "connected": True,
-            "is_available": data.get(
-                "is_available",
-                False,
+            "base_url": (
+                "https://co.agentrouter.org/v1"
             ),
-            "primary_balance": primary,
-            "balances": normalized,
+            "model_count": len(
+                model_ids
+            ),
+            "models": model_ids,
         }
 
-    except DeepSeekError as exc:
+    except AgentRouterError as exc:
 
         return {
-            "provider": "deepseek",
+            "provider": "agentrouter",
             "connected": False,
             "error": str(exc),
         }
