@@ -38,14 +38,22 @@
 
             <p class="subtitle">
                 Monitor balances, spending,
-                usage and AI provider integrations
-                from one dashboard.
+                requests and token usage across
+                multiple AI providers.
             </p>
 
         </div>
 
 
         <div class="topbar-actions">
+
+            {% if demo_mode %}
+
+            <span class="demo-badge">
+                ◆ Demo Data
+            </span>
+
+                {% endif %}
 
             <a
                 href="/"
@@ -98,7 +106,9 @@
     </nav>
 
 
+    <!-- ======================================== -->
     <!-- OVERVIEW -->
+    <!-- ======================================== -->
 
     <section
         class="tab-panel active"
@@ -119,12 +129,15 @@
 
             </div>
 
+
             <span class="section-note">
                 Live provider data
             </span>
 
         </div>
 
+
+        <!-- PRIMARY METRICS -->
 
         <section class="metric-grid">
 
@@ -155,11 +168,11 @@
 
                 <h3>
                     {{ summary.active_providers }}
+                    / 2
                 </h3>
 
                 <span>
-                    {{ summary.integration_count }}
-                    integrations available
+                    Live integrations
                 </span>
 
             </article>
@@ -188,7 +201,7 @@
                 </h3>
 
                 <span>
-                    Supported billing telemetry
+                    Last 30 days
                 </span>
 
             </article>
@@ -197,15 +210,27 @@
             <article class="metric-card">
 
                 <p>
-                    Total Requests
+                    Tracked Requests
                 </p>
 
                 <h3>
+
+                    {% if summary.tracked_requests is not none %}
+
+                    {{ "{:,}".format(
+                        summary.tracked_requests
+                    ) }}
+
+                    {% else %}
+
                     —
+
+                    {% endif %}
+
                 </h3>
 
                 <span>
-                    Analytics adapter coming next
+                    OpenRouter · 30 days
                 </span>
 
             </article>
@@ -214,15 +239,27 @@
             <article class="metric-card">
 
                 <p>
-                    Total Tokens
+                    Tracked Tokens
                 </p>
 
                 <h3>
+
+                    {% if summary.tracked_tokens is not none %}
+
+                    {{ "{:,}".format(
+                        summary.tracked_tokens
+                    ) }}
+
+                    {% else %}
+
                     —
+
+                    {% endif %}
+
                 </h3>
 
                 <span>
-                    Analytics adapter coming next
+                    OpenRouter · 30 days
                 </span>
 
             </article>
@@ -231,21 +268,135 @@
             <article class="metric-card">
 
                 <p>
-                    Integration Templates
+                    Avg Cost / Request
                 </p>
 
                 <h3>
-                    {{ summary.template_count }}
+
+                    {% if summary.avg_cost_per_request is not none %}
+
+                    ${{ "%.6f"|format(
+                        summary.avg_cost_per_request
+                    ) }}
+
+                    {% else %}
+
+                    —
+
+                    {% endif %}
+
                 </h3>
 
                 <span>
-                    Ready for future providers
+                    Tracked telemetry
                 </span>
 
             </article>
 
         </section>
 
+
+        <!-- TOKEN BREAKDOWN -->
+
+        <section class="panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        TOKEN TELEMETRY
+                    </p>
+
+                    <h2>
+                        Usage Breakdown
+                    </h2>
+
+                </div>
+
+
+                <span class="section-note">
+                    OpenRouter · last 30 days
+                </span>
+
+            </div>
+
+
+            <div class="token-grid">
+
+                <div class="token-stat">
+
+                    <span>
+                        Input Tokens
+                    </span>
+
+                    <strong>
+                        {{ "{:,}".format(
+                            analytics.input_tokens
+                        ) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="token-stat">
+
+                    <span>
+                        Output Tokens
+                    </span>
+
+                    <strong>
+                        {{ "{:,}".format(
+                            analytics.output_tokens
+                        ) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="token-stat">
+
+                    <span>
+                        Reasoning Tokens
+                    </span>
+
+                    <strong>
+                        {{ "{:,}".format(
+                            analytics.reasoning_tokens
+                        ) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="token-stat">
+
+                    <span>
+                        Cached Tokens
+                    </span>
+
+                    <strong>
+                        {{ "{:,}".format(
+                            analytics.cached_tokens
+                        ) }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <p class="telemetry-note">
+                Token and request telemetry currently
+                comes from OpenRouter Analytics.
+                DeepSeek account-wide token telemetry
+                is not included.
+            </p>
+
+        </section>
+
+
+        <!-- PROVIDER SUMMARY -->
 
         <section class="panel">
 
@@ -267,6 +418,7 @@
 
 
             <div class="overview-provider-grid">
+
 
                 <article class="provider-overview-card">
 
@@ -318,15 +470,16 @@
 
                         </div>
 
+
                         <div>
 
                             <span>
-                                Tracked Spend
+                                30d Requests
                             </span>
 
                             <strong>
-                                ${{ "%.4f"|format(
-                                    credits.total_usage
+                                {{ "{:,}".format(
+                                    analytics.request_count
                                 ) }}
                             </strong>
 
@@ -387,6 +540,7 @@
 
                         </div>
 
+
                         <div>
 
                             <span>
@@ -396,9 +550,13 @@
                             <strong>
 
                                 {% if deepseek.is_available %}
-                                    Available
+
+                                Available
+
                                 {% else %}
-                                    Unavailable
+
+                                Unavailable
+
                                 {% endif %}
 
                             </strong>
@@ -414,6 +572,8 @@
         </section>
 
 
+        <!-- COVERAGE -->
+
         <section class="panel">
 
             <div class="panel-heading">
@@ -425,7 +585,7 @@
                     </p>
 
                     <h2>
-                        What is currently tracked?
+                        Data Sources
                     </h2>
 
                 </div>
@@ -444,14 +604,14 @@
                         </strong>
 
                         <p>
-                            Balance, spend and
-                            usage snapshots
+                            Balance, cost, requests,
+                            tokens and model analytics
                         </p>
 
                     </div>
 
                     <span class="badge success">
-                        Live
+                        Full
                     </span>
 
                 </div>
@@ -466,36 +626,14 @@
                         </strong>
 
                         <p>
-                            Balance and
+                            Account balance and
                             balance history
                         </p>
 
                     </div>
 
-                    <span class="badge success">
-                        Live
-                    </span>
-
-                </div>
-
-
-                <div class="coverage-row">
-
-                    <div>
-
-                        <strong>
-                            Requests & Tokens
-                        </strong>
-
-                        <p>
-                            Provider analytics adapters
-                            will supply these metrics
-                        </p>
-
-                    </div>
-
-                    <span class="badge neutral">
-                        Next
+                    <span class="badge warning">
+                        Balance Only
                     </span>
 
                 </div>
@@ -507,7 +645,9 @@
     </section>
 
 
+    <!-- ======================================== -->
     <!-- OPENROUTER -->
+    <!-- ======================================== -->
 
     <section
         class="tab-panel"
@@ -570,7 +710,7 @@
             <article class="metric-card">
 
                 <p>
-                    Total Spend
+                    Account Usage
                 </p>
 
                 <h3>
@@ -580,7 +720,7 @@
                 </h3>
 
                 <span>
-                    Account usage
+                    Account lifetime usage
                 </span>
 
             </article>
@@ -589,17 +729,17 @@
             <article class="metric-card">
 
                 <p>
-                    Today
+                    30d Spend
                 </p>
 
                 <h3>
                     ${{ "%.4f"|format(
-                        openrouter.usage_daily
+                        analytics.total_usage
                     ) }}
                 </h3>
 
                 <span>
-                    Key usage
+                    Analytics period
                 </span>
 
             </article>
@@ -608,17 +748,17 @@
             <article class="metric-card">
 
                 <p>
-                    This Week
+                    Requests
                 </p>
 
                 <h3>
-                    ${{ "%.4f"|format(
-                        openrouter.usage_weekly
+                    {{ "{:,}".format(
+                        analytics.request_count
                     ) }}
                 </h3>
 
                 <span>
-                    Key usage
+                    Last 30 days
                 </span>
 
             </article>
@@ -627,17 +767,55 @@
             <article class="metric-card">
 
                 <p>
-                    This Month
+                    Total Tokens
                 </p>
 
                 <h3>
-                    ${{ "%.4f"|format(
-                        openrouter.usage_monthly
+                    {{ "{:,}".format(
+                        analytics.total_tokens
                     ) }}
                 </h3>
 
                 <span>
-                    Key usage
+                    Last 30 days
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    Avg Cost / Request
+                </p>
+
+                <h3>
+                    ${{ "%.6f"|format(
+                        analytics.avg_cost_per_request
+                    ) }}
+                </h3>
+
+                <span>
+                    Last 30 days
+                </span>
+
+            </article>
+
+
+            <article class="metric-card">
+
+                <p>
+                    Avg Cost / 1K Tokens
+                </p>
+
+                <h3>
+                    ${{ "%.6f"|format(
+                        analytics.avg_cost_per_1k_tokens
+                    ) }}
+                </h3>
+
+                <span>
+                    Last 30 days
                 </span>
 
             </article>
@@ -652,9 +830,13 @@
                 <h3 class="text-value">
 
                     {% if openrouter.is_free_tier %}
-                        Free
+
+                    Free
+
                     {% else %}
-                        Standard
+
+                    Standard
+
                     {% endif %}
 
                 </h3>
@@ -668,6 +850,211 @@
         </section>
 
 
+        <!-- TOKEN BREAKDOWN -->
+
+        <section class="panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        TOKENS
+                    </p>
+
+                    <h2>
+                        Token Breakdown
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="token-grid">
+
+                <div class="token-stat">
+
+                    <span>
+                        Input
+                    </span>
+
+                    <strong>
+                        {{ "{:,}".format(
+                            analytics.input_tokens
+                        ) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="token-stat">
+
+                    <span>
+                        Output
+                    </span>
+
+                    <strong>
+                        {{ "{:,}".format(
+                            analytics.output_tokens
+                        ) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="token-stat">
+
+                    <span>
+                        Reasoning
+                    </span>
+
+                    <strong>
+                        {{ "{:,}".format(
+                            analytics.reasoning_tokens
+                        ) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="token-stat">
+
+                    <span>
+                        Cached
+                    </span>
+
+                    <strong>
+                        {{ "{:,}".format(
+                            analytics.cached_tokens
+                        ) }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- TOP MODELS -->
+
+        <section class="panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        ANALYTICS
+                    </p>
+
+                    <h2>
+                        Top Models
+                    </h2>
+
+                </div>
+
+
+                <span class="section-note">
+                    Last 30 days
+                </span>
+
+            </div>
+
+
+            {% if analytics.top_models %}
+
+            <div class="table-wrapper">
+
+                <table class="analytics-table">
+
+                    <thead>
+
+                    <tr>
+
+                        <th>
+                            Model
+                        </th>
+
+                        <th>
+                            Requests
+                        </th>
+
+                        <th>
+                            Tokens
+                        </th>
+
+                        <th>
+                            Cost
+                        </th>
+
+                    </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for model in analytics.top_models %}
+
+                    <tr>
+
+                        <td>
+                            {{ model.model }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(
+                                model.requests
+                            ) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(
+                                model.tokens
+                            ) }}
+                        </td>
+
+                        <td>
+                            ${{ "%.6f"|format(
+                                model.cost
+                            ) }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state">
+
+                <strong>
+                    No model activity yet
+                </strong>
+
+                <p>
+                    OpenRouter Analytics is connected,
+                    but no requests were recorded during
+                    the selected 30-day period.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- HISTORY -->
+
         <section class="panel">
 
             <div class="panel-heading">
@@ -679,7 +1066,7 @@
                     </p>
 
                     <h2>
-                        OpenRouter Usage
+                        Usage History
                     </h2>
 
                 </div>
@@ -707,7 +1094,9 @@
     </section>
 
 
+    <!-- ======================================== -->
     <!-- DEEPSEEK -->
+    <!-- ======================================== -->
 
     <section
         class="tab-panel"
@@ -814,9 +1203,13 @@
                 <h3 class="text-value">
 
                     {% if deepseek.is_available %}
-                        Available
+
+                    Available
+
                     {% else %}
-                        Unavailable
+
+                    Unavailable
+
                     {% endif %}
 
                 </h3>
@@ -837,11 +1230,48 @@
                 <div>
 
                     <p class="eyebrow">
+                        TELEMETRY
+                    </p>
+
+                    <h2>
+                        Current Coverage
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="empty-state left">
+
+                <strong>
+                    Balance monitoring enabled
+                </strong>
+
+                <p>
+                    DeepSeek currently contributes
+                    account balance and balance history.
+                    Account-wide request and token totals
+                    are not inferred from balance changes.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="eyebrow">
                         HISTORY
                     </p>
 
                     <h2>
-                        DeepSeek Balance
+                        Balance History
                     </h2>
 
                 </div>
@@ -869,7 +1299,9 @@
     </section>
 
 
+    <!-- ======================================== -->
     <!-- INTEGRATIONS -->
+    <!-- ======================================== -->
 
     <section
         class="tab-panel"
@@ -889,8 +1321,8 @@
                 </h2>
 
                 <p class="section-description">
-                    Configure providers through
-                    environment variables.
+                    Configure supported AI providers
+                    using environment variables.
                 </p>
 
             </div>

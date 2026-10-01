@@ -8,7 +8,6 @@ html {
 
 body {
     margin: 0;
-
     min-height: 100vh;
 
     font-family:
@@ -19,11 +18,8 @@ body {
         "Segoe UI",
         sans-serif;
 
-    background:
-        #090c11;
-
-    color:
-        #f3f5f7;
+    background: #090c11;
+    color: #f3f5f7;
 }
 
 button,
@@ -32,63 +28,49 @@ a {
 }
 
 .app-shell {
-    width:
-        min(1240px, 92%);
-
-    margin:
-        0 auto;
-
-    padding:
-        46px 0;
+    width: min(1240px, 92%);
+    margin: 0 auto;
+    padding: 46px 0;
 }
 
 
-/* HEADER */
+/* =========================================
+   HEADER
+   ========================================= */
 
 .topbar {
     display: flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        flex-start;
+    justify-content: space-between;
+    align-items: flex-start;
 
     gap: 30px;
-
     margin-bottom: 30px;
 }
 
 .topbar h1 {
-    margin:
-        6px 0 10px;
+    margin: 6px 0 10px;
 
-    font-size:
-        clamp(
-            32px,
-            5vw,
-            48px
-        );
+    font-size: clamp(
+        32px,
+        5vw,
+        48px
+    );
 
-    letter-spacing:
-        -1.5px;
+    letter-spacing: -1.5px;
 }
 
 .eyebrow {
     margin: 0;
 
     font-size: 11px;
-
-    letter-spacing: 2px;
-
     font-weight: 700;
+    letter-spacing: 2px;
 
     color: #727b8a;
 }
 
 .subtitle {
     max-width: 700px;
-
     margin: 0;
 
     color: #8d96a5;
@@ -98,20 +80,18 @@ a {
 
 .topbar-actions {
     display: flex;
+    align-items: center;
 
     gap: 10px;
-
-    align-items: center;
 }
 
 .refresh-button,
-.online-badge {
+.online-badge,
+.demo-badge {
     min-height: 38px;
 
     display: inline-flex;
-
     align-items: center;
-
     justify-content: center;
 
     padding: 8px 14px;
@@ -127,29 +107,41 @@ a {
     text-decoration: none;
 
     color: #d7dde7;
-
     background: #151a22;
 
-    border:
-        1px solid #29313d;
+    border: 1px solid #29313d;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .refresh-button:hover {
-    background:
-        #1c222c;
+    background: #1c222c;
+    border-color: #35404e;
 }
 
 .online-badge {
     color: #5ee69b;
-
     background: #111b16;
 
-    border:
-        1px solid #20352a;
+    border: 1px solid #20352a;
+}
+
+.demo-badge {
+    color: #e9c46a;
+    background: #241f11;
+
+    border: 1px solid #40371c;
+
+    font-size: 12px;
+    font-weight: 700;
 }
 
 
-/* NAV */
+/* =========================================
+   NAVIGATION
+   ========================================= */
 
 .dashboard-nav {
     display: flex;
@@ -164,9 +156,7 @@ a {
 
     background: #0f1319;
 
-    border:
-        1px solid #1d242e;
-
+    border: 1px solid #1d242e;
     border-radius: 13px;
 }
 
@@ -180,26 +170,29 @@ a {
     border-radius: 9px;
 
     color: #7f8998;
-
     background: transparent;
 
     white-space: nowrap;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
 }
 
 .nav-button:hover {
     color: #dce2ea;
-
     background: #171d25;
 }
 
 .nav-button.active {
     color: #ffffff;
-
     background: #202732;
 }
 
 
-/* TABS */
+/* =========================================
+   TABS
+   ========================================= */
 
 .tab-panel {
     display: none;
@@ -210,16 +203,14 @@ a {
 }
 
 
-/* SECTION */
+/* =========================================
+   SECTION HEADINGS
+   ========================================= */
 
 .section-heading {
     display: flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        flex-end;
+    justify-content: space-between;
+    align-items: flex-end;
 
     gap: 20px;
 
@@ -228,8 +219,7 @@ a {
 
 .section-heading h2,
 .panel-heading h2 {
-    margin:
-        5px 0 0;
+    margin: 5px 0 0;
 
     font-size: 24px;
 }
@@ -245,7 +235,9 @@ a {
 }
 
 
-/* METRICS */
+/* =========================================
+   METRIC CARDS
+   ========================================= */
 
 .metric-grid {
     display: grid;
@@ -262,13 +254,13 @@ a {
 }
 
 .metric-card {
+    min-width: 0;
+
     padding: 20px;
 
     background: #10151c;
 
-    border:
-        1px solid #1e2631;
-
+    border: 1px solid #1e2631;
     border-radius: 14px;
 }
 
@@ -281,12 +273,13 @@ a {
 }
 
 .metric-card h3 {
-    margin:
-        11px 0;
+    margin: 11px 0;
 
     font-size: 30px;
 
     letter-spacing: -0.8px;
+
+    overflow-wrap: anywhere;
 }
 
 .metric-card h3.text-value {
@@ -300,7 +293,9 @@ a {
 }
 
 
-/* PANELS */
+/* =========================================
+   PANELS
+   ========================================= */
 
 .panel {
     padding: 22px;
@@ -309,25 +304,24 @@ a {
 
     background: #10151c;
 
-    border:
-        1px solid #1e2631;
-
+    border: 1px solid #1e2631;
     border-radius: 14px;
 }
 
 .panel-heading {
     display: flex;
-
-    justify-content:
-        space-between;
-
+    justify-content: space-between;
     align-items: center;
+
+    gap: 20px;
 
     margin-bottom: 20px;
 }
 
 
-/* PROVIDER OVERVIEW */
+/* =========================================
+   PROVIDER OVERVIEW
+   ========================================= */
 
 .overview-provider-grid {
     display: grid;
@@ -346,20 +340,14 @@ a {
 
     background: #0c1117;
 
-    border:
-        1px solid #1d2530;
-
+    border: 1px solid #1d2530;
     border-radius: 12px;
 }
 
 .provider-card-header {
     display: flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        flex-start;
+    justify-content: space-between;
+    align-items: flex-start;
 
     gap: 16px;
 }
@@ -369,8 +357,7 @@ a {
 }
 
 .provider-card-header p {
-    margin:
-        5px 0 0;
+    margin: 5px 0 0;
 
     color: #727c8a;
 
@@ -392,6 +379,8 @@ a {
 }
 
 .provider-stats div {
+    min-width: 0;
+
     padding: 13px;
 
     background: #111720;
@@ -411,31 +400,30 @@ a {
 
 .provider-stats strong {
     font-size: 17px;
+
+    overflow-wrap: anywhere;
 }
 
 
-/* COVERAGE */
+/* =========================================
+   COVERAGE
+   ========================================= */
 
 .coverage-grid {
     display: flex;
-
     flex-direction: column;
 }
 
 .coverage-row {
     display: flex;
-
-    justify-content:
-        space-between;
-
+    justify-content: space-between;
     align-items: center;
 
     gap: 18px;
 
     padding: 15px 0;
 
-    border-bottom:
-        1px solid #1c242e;
+    border-bottom: 1px solid #1c242e;
 }
 
 .coverage-row:last-child {
@@ -443,20 +431,22 @@ a {
 }
 
 .coverage-row p {
-    margin:
-        5px 0 0;
+    margin: 5px 0 0;
 
     color: #727c89;
 
     font-size: 13px;
+
+    line-height: 1.5;
 }
 
 
-/* BADGES */
+/* =========================================
+   BADGES
+   ========================================= */
 
 .badge {
     display: inline-flex;
-
     align-items: center;
 
     padding: 5px 9px;
@@ -466,42 +456,96 @@ a {
     white-space: nowrap;
 
     font-size: 11px;
-
     font-weight: 700;
 }
 
 .badge.success {
     color: #63e6a0;
-
     background: #13251b;
 }
 
 .badge.danger {
     color: #ff8585;
-
     background: #2b1719;
 }
 
 .badge.warning {
     color: #f1c36e;
-
     background: #292112;
 }
 
 .badge.neutral {
     color: #8993a2;
-
     background: #1b2028;
 }
 
 
-/* CHARTS */
+/* =========================================
+   TOKEN ANALYTICS
+   ========================================= */
+
+.token-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+
+    gap: 12px;
+}
+
+.token-stat {
+    min-width: 0;
+
+    padding: 16px;
+
+    background: #0c1117;
+
+    border: 1px solid #1d2530;
+    border-radius: 11px;
+}
+
+.token-stat span {
+    display: block;
+
+    margin-bottom: 9px;
+
+    color: #727c8a;
+
+    font-size: 12px;
+}
+
+.token-stat strong {
+    font-size: 20px;
+
+    overflow-wrap: anywhere;
+}
+
+.telemetry-note {
+    margin: 18px 0 0;
+
+    padding-top: 15px;
+
+    border-top: 1px solid #1c242e;
+
+    color: #667180;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   CHARTS
+   ========================================= */
 
 .chart-container {
     position: relative;
 
     width: 100%;
-
     height: 340px;
 }
 
@@ -516,7 +560,101 @@ a {
 }
 
 
-/* INTEGRATIONS */
+/* =========================================
+   ANALYTICS TABLE
+   ========================================= */
+
+.table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+.analytics-table {
+    width: 100%;
+
+    min-width: 620px;
+
+    border-collapse: collapse;
+}
+
+.analytics-table th,
+.analytics-table td {
+    padding: 13px 12px;
+
+    text-align: left;
+
+    border-bottom: 1px solid #1c242e;
+}
+
+.analytics-table th {
+    color: #727c8a;
+
+    font-size: 11px;
+
+    letter-spacing: 0.5px;
+
+    text-transform: uppercase;
+}
+
+.analytics-table td {
+    color: #cdd3db;
+
+    font-size: 13px;
+}
+
+.analytics-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+
+/* =========================================
+   EMPTY STATES
+   ========================================= */
+
+.empty-state {
+    padding: 28px 20px;
+
+    text-align: center;
+
+    background: #0c1117;
+
+    border: 1px solid #1d2530;
+    border-radius: 11px;
+}
+
+.empty-state.left {
+    text-align: left;
+}
+
+.empty-state strong {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #cfd5dd;
+}
+
+.empty-state p {
+    max-width: 700px;
+
+    margin: 0 auto;
+
+    color: #727c8a;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+.empty-state.left p {
+    margin: 0;
+}
+
+
+/* =========================================
+   INTEGRATIONS
+   ========================================= */
 
 .integration-grid {
     display: grid;
@@ -531,24 +669,20 @@ a {
 }
 
 .integration-card {
+    min-width: 0;
+
     padding: 19px;
 
     background: #10151c;
 
-    border:
-        1px solid #1e2631;
-
+    border: 1px solid #1e2631;
     border-radius: 14px;
 }
 
 .integration-header {
     display: flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        flex-start;
+    justify-content: space-between;
+    align-items: flex-start;
 
     gap: 14px;
 }
@@ -560,8 +694,7 @@ a {
 }
 
 .integration-header p {
-    margin:
-        5px 0 0;
+    margin: 5px 0 0;
 
     color: #667180;
 
@@ -571,8 +704,7 @@ a {
 .integration-description {
     min-height: 42px;
 
-    margin:
-        17px 0;
+    margin: 17px 0;
 
     color: #858f9d;
 
@@ -583,18 +715,15 @@ a {
 
 .capability-list {
     display: flex;
-
     flex-wrap: wrap;
 
     gap: 6px;
 }
 
 .capability-list span {
-    padding:
-        5px 8px;
+    padding: 5px 8px;
 
     color: #98a2af;
-
     background: #181e27;
 
     border-radius: 7px;
@@ -604,8 +733,7 @@ a {
 
 .template-note,
 .live-note {
-    margin:
-        16px 0 0;
+    margin: 16px 0 0;
 
     font-size: 11px;
 }
@@ -619,13 +747,13 @@ a {
 }
 
 
-/* FOOTER */
+/* =========================================
+   FOOTER
+   ========================================= */
 
 footer {
     display: flex;
-
-    justify-content:
-        space-between;
+    justify-content: space-between;
 
     gap: 20px;
 
@@ -637,13 +765,21 @@ footer {
 }
 
 
-/* TABLET */
+/* =========================================
+   TABLET
+   ========================================= */
 
-@media (
-    max-width: 900px
-) {
+@media (max-width: 900px) {
 
     .metric-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .token-grid {
         grid-template-columns:
             repeat(
                 2,
@@ -658,17 +794,16 @@ footer {
 }
 
 
-/* MOBILE */
+/* =========================================
+   MOBILE
+   ========================================= */
 
-@media (
-    max-width: 620px
-) {
+@media (max-width: 620px) {
 
     .app-shell {
         width: 92%;
 
-        padding:
-            25px 0;
+        padding: 25px 0;
     }
 
     .topbar {
@@ -677,11 +812,26 @@ footer {
         margin-bottom: 22px;
     }
 
+    .topbar h1 {
+        font-size: 32px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
     .topbar-actions {
         width: 100%;
 
-        justify-content:
-            space-between;
+        justify-content: space-between;
+
+        flex-wrap: wrap;
+    }
+
+    .refresh-button,
+    .online-badge,
+    .demo-badge {
+        font-size: 12px;
     }
 
     .dashboard-nav {
@@ -689,6 +839,10 @@ footer {
     }
 
     .metric-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .token-grid {
         grid-template-columns: 1fr;
     }
 
@@ -701,10 +855,19 @@ footer {
     }
 
     .section-heading {
-        align-items:
-            flex-start;
+        align-items: flex-start;
 
         flex-direction: column;
+    }
+
+    .panel-heading {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .coverage-row {
+        align-items: flex-start;
     }
 
     .chart-container {
@@ -720,16 +883,27 @@ footer {
 }
 
 
-/* VERY SMALL */
+/* =========================================
+   VERY SMALL SCREENS
+   ========================================= */
 
-@media (
-    max-width: 380px
-) {
+@media (max-width: 380px) {
 
     .topbar-actions {
         flex-direction: column;
-
         align-items: stretch;
+    }
+
+    .refresh-button,
+    .online-badge,
+    .demo-badge {
+        width: 100%;
+    }
+
+    .integration-header,
+    .provider-card-header,
+    .coverage-row {
+        flex-direction: column;
     }
 
 }
