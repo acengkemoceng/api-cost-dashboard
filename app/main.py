@@ -21,6 +21,11 @@ from app.providers.openrouter import (
     get_key_info,
 )
 
+from app.providers.deepseek import (
+    DeepSeekError,
+    get_balance as get_deepseek_balance,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -369,3 +374,70 @@ async def collector_status():
             app.state.collector_last_error
         ),
     }
+
+@app.get("/api/providers/deepseek")
+async def deepseek_status():
+
+    try:
+        data = await get_deepseek_balance()
+
+        balances = data.get(
+            "balance_infos",
+            [],
+        )
+
+        normalized = []
+
+        for item in balances:
+            normalized.append(
+                {
+                    "currency": item.get(
+                        "currency"
+                    ),
+                    "total_balance": float(
+                        item.get(
+                            "total_balance"
+                        ) or 0
+                    ),
+                    "granted_balance": float(
+                        item.get(
+                            "granted_balance"
+                        ) or 0
+                    ),
+                    "topped_up_balance": float(
+                        item.get(
+                            "topped_up_balance"
+                        ) or 0
+                    ),
+                }
+            )
+
+        primary = next(
+            (
+                item
+                for item in normalized
+                if item["currency"] == "USD"
+            ),
+            normalized[0]
+            if normalized
+            else None,
+        )
+
+        return {
+            "provider": "deepseek",
+            "connected": True,
+            "is_available": data.get(
+                "is_available",
+                False,
+            ),
+            "primary_balance": primary,
+            "balances": normalized,
+        }
+
+    except DeepSeekError as exc:
+
+        return {
+            "provider": "deepseek",
+            "connected": False,
+            "error": str(exc),
+        }
