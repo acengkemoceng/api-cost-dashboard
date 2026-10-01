@@ -26,9 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 def utc_now() -> str:
-    return datetime.now(
-        timezone.utc
-    ).isoformat()
+    return datetime.now(timezone.utc).isoformat()
 
 
 def get_snapshot_interval() -> int:
@@ -56,9 +54,7 @@ async def openrouter_collector(app: FastAPI):
     )
 
     while True:
-        app.state.collector_last_attempt = (
-            utc_now()
-        )
+        app.state.collector_last_attempt = utc_now()
 
         try:
             data = await get_key_info()
@@ -68,14 +64,8 @@ async def openrouter_collector(app: FastAPI):
                 data,
             )
 
-            app.state.collector_last_success = (
-                utc_now()
-            )
-
-            app.state.collector_last_inserted = (
-                inserted
-            )
-
+            app.state.collector_last_success = utc_now()
+            app.state.collector_last_inserted = inserted
             app.state.collector_last_error = None
 
             logger.info(
@@ -85,9 +75,7 @@ async def openrouter_collector(app: FastAPI):
             )
 
         except OpenRouterError as exc:
-            app.state.collector_last_error = (
-                str(exc)
-            )
+            app.state.collector_last_error = str(exc)
 
             logger.warning(
                 "OpenRouter collector error: %s",
@@ -95,9 +83,7 @@ async def openrouter_collector(app: FastAPI):
             )
 
         except Exception as exc:
-            app.state.collector_last_error = (
-                str(exc)
-            )
+            app.state.collector_last_error = str(exc)
 
             logger.exception(
                 "Unexpected collector error"
@@ -132,7 +118,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AI API Cost Dashboard",
-    version="0.4.0",
+    version="0.5.0",
     description=(
         "Dashboard untuk memonitor biaya "
         "dan penggunaan AI API."
@@ -168,6 +154,15 @@ async def dashboard(request: Request):
         "error": None,
     }
 
+    credits = {
+        "connected": False,
+        "total_credits": 0,
+        "total_usage": 0,
+        "remaining": 0,
+        "usage_percent": 0,
+        "error": None,
+    }
+
     try:
         data = await get_key_info()
 
@@ -178,9 +173,7 @@ async def dashboard(request: Request):
                 "is_free_tier": data.get(
                     "is_free_tier"
                 ),
-                "usage": (
-                    data.get("usage") or 0
-                ),
+                "usage": data.get("usage") or 0,
                 "usage_daily": (
                     data.get("usage_daily") or 0
                 ),
@@ -200,6 +193,43 @@ async def dashboard(request: Request):
     except OpenRouterError as exc:
         openrouter["error"] = str(exc)
 
+    try:
+        credit_data = await get_credits()
+
+        total_credits = float(
+            credit_data.get("total_credits") or 0
+        )
+
+        total_usage = float(
+            credit_data.get("total_usage") or 0
+        )
+
+        remaining = max(
+            total_credits - total_usage,
+            0,
+        )
+
+        usage_percent = 0
+
+        if total_credits > 0:
+            usage_percent = min(
+                (total_usage / total_credits) * 100,
+                100,
+            )
+
+        credits.update(
+            {
+                "connected": True,
+                "total_credits": total_credits,
+                "total_usage": total_usage,
+                "remaining": remaining,
+                "usage_percent": usage_percent,
+            }
+        )
+
+    except OpenRouterError as exc:
+        credits["error"] = str(exc)
+
     connected_providers = (
         1 if openrouter["connected"] else 0
     )
@@ -208,14 +238,11 @@ async def dashboard(request: Request):
         request=request,
         name="dashboard.html",
         context={
-            "app_name": (
-                "AI API Cost Dashboard"
-            ),
-            "version": "0.4.0",
-            "connected_providers": (
-                connected_providers
-            ),
+            "app_name": "AI API Cost Dashboard",
+            "version": "0.5.0",
+            "connected_providers": connected_providers,
             "openrouter": openrouter,
+            "credits": credits,
         },
     )
 
@@ -224,10 +251,8 @@ async def dashboard(request: Request):
 async def health():
     return {
         "status": "ok",
-        "service": (
-            "ai-api-cost-dashboard"
-        ),
-        "version": "0.4.0",
+        "service": "ai-api-cost-dashboard",
+        "version": "0.5.0",
     }
 
 
@@ -261,6 +286,41 @@ async def openrouter_status():
             "limit_reset": data.get(
                 "limit_reset"
             ),
+        }
+
+    except OpenRouterError as exc:
+        return {
+            "provider": "openrouter",
+            "connected": False,
+            "error": str(exc),
+        }
+
+
+@app.get("/api/providers/openrouter/credits")
+async def openrouter_credits():
+
+    try:
+        data = await get_credits()
+
+        total_credits = float(
+            data.get("total_credits") or 0
+        )
+
+        total_usage = float(
+            data.get("total_usage") or 0
+        )
+
+        remaining = max(
+            total_credits - total_usage,
+            0,
+        )
+
+        return {
+            "provider": "openrouter",
+            "connected": True,
+            "total_credits": total_credits,
+            "total_usage": total_usage,
+            "remaining": remaining,
         }
 
     except OpenRouterError as exc:
@@ -309,37 +369,3 @@ async def collector_status():
             app.state.collector_last_error
         ),
     }
-
-@app.get("/api/providers/openrouter/credits")
-async def openrouter_credits():
-
-    try:
-        data = await get_credits()
-
-        total_credits = float(
-            data.get("total_credits") or 0
-        )
-
-        total_usage = float(
-            data.get("total_usage") or 0
-        )
-
-        remaining = max(
-            total_credits - total_usage,
-            0,
-        )
-
-        return {
-            "provider": "openrouter",
-            "connected": True,
-            "total_credits": total_credits,
-            "total_usage": total_usage,
-            "remaining": remaining,
-        }
-
-    except OpenRouterError as exc:
-        return {
-            "provider": "openrouter",
-            "connected": False,
-            "error": str(exc),
-        }

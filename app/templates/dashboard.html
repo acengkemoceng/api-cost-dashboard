@@ -31,8 +31,8 @@
             <h1>{{ app_name }}</h1>
 
             <p class="subtitle">
-                Monitor AI provider usage and spending
-                from one local dashboard.
+                Monitor AI provider usage, balance,
+                and spending from one local dashboard.
             </p>
         </div>
 
@@ -58,10 +58,7 @@
     <section class="cards">
 
         <article class="card">
-
-            <p>
-                Connected Providers
-            </p>
+            <p>Connected Providers</p>
 
             <h2>
                 {{ connected_providers }}
@@ -70,59 +67,169 @@
             <span>
                 of 3 configured providers
             </span>
-
         </article>
 
 
         <article class="card">
+            <p>Remaining Credit</p>
 
-            <p>
-                OpenRouter Today
-            </p>
+            <h2>
+                ${{ "%.4f"|format(credits.remaining) }}
+            </h2>
+
+            <span>
+                OpenRouter account
+            </span>
+        </article>
+
+
+        <article class="card">
+            <p>Total Spent</p>
+
+            <h2>
+                ${{ "%.4f"|format(credits.total_usage) }}
+            </h2>
+
+            <span>
+                OpenRouter account
+            </span>
+        </article>
+
+
+        <article class="card">
+            <p>Today</p>
 
             <h2>
                 ${{ "%.4f"|format(openrouter.usage_daily) }}
             </h2>
 
             <span>
-                Daily API usage
+                OpenRouter usage
             </span>
-
         </article>
 
 
         <article class="card">
-
-            <p>
-                OpenRouter This Week
-            </p>
+            <p>This Week</p>
 
             <h2>
                 ${{ "%.4f"|format(openrouter.usage_weekly) }}
             </h2>
 
             <span>
-                Weekly API usage
+                OpenRouter usage
             </span>
-
         </article>
 
 
         <article class="card">
-
-            <p>
-                OpenRouter This Month
-            </p>
+            <p>This Month</p>
 
             <h2>
                 ${{ "%.4f"|format(openrouter.usage_monthly) }}
             </h2>
 
             <span>
-                Monthly API usage
+                OpenRouter usage
             </span>
-
         </article>
+
+    </section>
+
+
+    <section class="panel credit-panel">
+
+        <div class="panel-header">
+
+            <div>
+                <p class="eyebrow">
+                    OPENROUTER CREDIT
+                </p>
+
+                <h2>
+                    Account Balance
+                </h2>
+            </div>
+
+        </div>
+
+
+        {% if credits.connected %}
+
+        <div class="credit-summary">
+
+            <div>
+                <span>Total Credits</span>
+
+                <strong>
+                    ${{ "%.4f"|format(credits.total_credits) }}
+                </strong>
+            </div>
+
+
+            <div>
+                <span>Used</span>
+
+                <strong>
+                    ${{ "%.4f"|format(credits.total_usage) }}
+                </strong>
+            </div>
+
+
+            <div>
+                <span>Remaining</span>
+
+                <strong>
+                    ${{ "%.4f"|format(credits.remaining) }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="credit-progress">
+
+            <div class="progress-info">
+
+                <span>
+                    Credit usage
+                </span>
+
+                <span>
+                    {{ "%.1f"|format(credits.usage_percent) }}%
+                </span>
+
+            </div>
+
+
+            <div class="progress-track">
+
+                <div
+                    class="progress-fill"
+                    style="width: {{ credits.usage_percent }}%"
+                ></div>
+
+            </div>
+
+
+            {% if credits.total_credits == 0 %}
+
+            <p class="credit-note">
+                No paid OpenRouter credits detected yet.
+            </p>
+
+            {% endif %}
+
+        </div>
+
+        {% else %}
+
+        <p class="credit-note">
+            Credit information unavailable:
+            {{ credits.error }}
+        </p>
+
+        {% endif %}
 
     </section>
 
@@ -181,7 +288,6 @@
 
         <div class="provider-list">
 
-
             <div class="provider">
 
                 <div>
@@ -218,7 +324,6 @@
 
                     <p>
                         Tier:
-
                         {% if openrouter.is_free_tier %}
                             Free
                         {% else %}
@@ -321,5 +426,4 @@
 ></script>
 
 </body>
-
 </html>

@@ -210,6 +210,92 @@ body {
     overflow-wrap: anywhere;
 }
 
+.credit-panel {
+    margin-bottom: 24px;
+}
+
+.credit-summary {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 16px;
+
+    margin-bottom: 24px;
+}
+
+.credit-summary div {
+    padding: 16px;
+
+    background: #0d1117;
+
+    border: 1px solid #202630;
+    border-radius: 12px;
+}
+
+.credit-summary span {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 12px;
+
+    color: #727b8a;
+}
+
+.credit-summary strong {
+    font-size: 20px;
+}
+
+.credit-progress {
+    width: 100%;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+
+    margin-bottom: 8px;
+
+    font-size: 13px;
+
+    color: #8d96a5;
+}
+
+.progress-track {
+    width: 100%;
+    height: 9px;
+
+    overflow: hidden;
+
+    background: #1b212a;
+
+    border-radius: 20px;
+}
+
+.progress-fill {
+    height: 100%;
+
+    background: #5ee69b;
+
+    border-radius: 20px;
+
+    transition: width 0.3s ease;
+}
+
+.credit-note {
+    margin: 12px 0 0;
+
+    font-size: 13px;
+    color: #727b8a;
+}
+
+
+@media (max-width: 600px) {
+    .credit-summary {
+        grid-template-columns: 1fr;
+    }
+}
 .provider-title {
     display: flex;
     align-items: center;
