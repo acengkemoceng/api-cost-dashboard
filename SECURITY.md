@@ -1,21 +1,23 @@
 # Security Policy
 
+AI API Cost Dashboard interacts with sensitive API credentials and billing information.
+
 ## Secrets
 
-Never commit sensitive credentials such as:
+Never commit:
 
 - `.env`
 - API keys
 - management keys
 - access tokens
 - private account information
-- runtime database files
+- runtime databases
 
-Use `.env.example` only for variable names and empty placeholders.
+Use `.env.example` only for environment variable names and empty placeholders.
 
 ## Network Exposure
 
-By default, AI API Cost Dashboard binds to:
+The default Docker configuration binds the application to:
 
 ```text
 127.0.0.1:8000

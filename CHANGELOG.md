@@ -20,7 +20,7 @@ All notable changes to AI API Cost Dashboard are documented here.
 
 ### Added
 
-- OpenRouter Analytics API support
+- OpenRouter Analytics API integration
 - Request count
 - Total token usage
 - Input token usage
@@ -41,7 +41,7 @@ All notable changes to AI API Cost Dashboard are documented here.
 - DeepSeek integration
 - SQLite history
 - Background snapshot collector
-- OpenRouter usage charts
+- OpenRouter history charts
 - DeepSeek balance charts
 - Responsive dashboard
 - Docker deployment
